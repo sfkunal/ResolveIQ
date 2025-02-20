@@ -36,3 +36,190 @@
     transform: rotate(360deg);
   }
 }
+
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr 400px;
+  height: 100vh;
+  gap: 1px;
+  background-color: #f0f0f0;
+}
+
+.left-column,
+.middle-column,
+.right-column {
+  background-color: white;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px);
+}
+
+.chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.chat-input {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.chat-input button {
+  padding: 10px 20px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background-color: #0052a3;
+}
+
+.ticket-list {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  min-height: 200px;
+}
+
+.ticket-item {
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.ticket-item:hover {
+  background-color: #f5f5f5;
+}
+
+.ticket-item:last-child {
+  border-bottom: none;
+}
+
+.ticket-title {
+  margin: 8px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.ticket-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-badge.open {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-badge.in.progress {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.status-badge.resolved {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.ticket-author {
+  font-weight: 500;
+}
+
+.ticket-time {
+  color: #999;
+}
+
+.ticket-details {
+  padding: 20px;
+}
+
+.ticket-details-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-style: italic;
+}
+
+.ticket-details-header {
+  margin-bottom: 24px;
+}
+
+.ticket-details-title {
+  margin-top: 12px;
+  font-size: 24px;
+  color: #333;
+}
+
+.ticket-details-meta {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.meta-item {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.meta-item:last-child {
+  margin-bottom: 0;
+}
+
+.meta-label {
+  width: 120px;
+  color: #666;
+  font-weight: 500;
+}
+
+.meta-value {
+  color: #333;
+}
+
+.ticket-details-description {
+  background-color: white;
+  border-radius: 8px;
+}
+
+.ticket-details-description h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.ticket-details-description p {
+  line-height: 1.6;
+  color: #444;
+}
