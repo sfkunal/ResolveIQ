@@ -64,13 +64,24 @@ class ChatModel:
     def model(self):
         return self._model
 
-def generate_response(ticket_string, relevant_knowledge):
+def generate_response(ticket_string, relevant_knowledge, chat_history=None):
     chat_model = ChatModel().model
+    
+    # Build conversation history
     messages = [
-        SystemMessage(content="You are a helpful AI assistant. Use the relevant knowledge to solve the ticket."),
+        SystemMessage(content="You are a helpful AI assistant. Use the relevant knowledge to solve the ticket and answer follow-up questions."),
         HumanMessage(content="Ticket: " + ticket_string),
         HumanMessage(content="Relevant knowledge: " + relevant_knowledge)
     ]
+    
+    # Add chat history if it exists
+    if chat_history:
+        for msg in chat_history:
+            if msg['sender'] == 'user':
+                messages.append(HumanMessage(content=msg['content']))
+            elif msg['sender'] == 'ai':
+                messages.append(HumanMessage(content=msg['content'], role="assistant"))
+    
     response = chat_model.invoke(messages)
     return response.content
 

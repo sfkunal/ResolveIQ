@@ -61,6 +61,7 @@ def chat():
         data = request.json
         ticket_id = data.get('ticketId')
         message = data.get('message')
+        chat_history = data.get('chatHistory', [])
         
         if not ticket_id or not message:
             return jsonify({"error": "Missing ticketId or message"}), 400
@@ -75,10 +76,11 @@ def chat():
             kb_manager.vectorstore
         )
         
-        # Generate response
+        # Generate response with chat history
         response = engine.generate_response(
             ticket_string + "\nUser message: " + message,
-            relevant_knowledge[0]
+            relevant_knowledge[0],
+            chat_history
         )
         
         return jsonify({

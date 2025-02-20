@@ -45,11 +45,11 @@ const Chat: React.FC<ChatProps> = ({ ticketId }) => {
     setInputMessage('');
     setIsLoading(true);
 
-    console.log("sending" + JSON.stringify({
-        ticketId: ticketId,
-        message: inputMessage
-      }))
-    
+    // Convert messages to the format expected by the backend
+    const chatHistory = messages.map(msg => ({
+      content: msg.content,
+      sender: msg.sender
+    }));
 
     try {
       const response = await fetch('http://127.0.0.1:5000/api/chat', {
@@ -59,7 +59,8 @@ const Chat: React.FC<ChatProps> = ({ ticketId }) => {
         },
         body: JSON.stringify({
           ticketId: ticketId,
-          message: inputMessage
+          message: inputMessage,
+          chatHistory: chatHistory
         }),
       });
 
