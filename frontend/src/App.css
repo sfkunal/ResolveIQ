@@ -223,3 +223,39 @@
   line-height: 1.6;
   color: #444;
 }
+
+.message {
+  margin: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  max-width: 80%;
+}
+
+.user-message {
+  background-color: #007bff;
+  color: white;
+  margin-left: auto;
+}
+
+.ai-message {
+  background-color: #f0f0f0;
+  color: #333;
+  margin-right: auto;
+}
+
+.message-timestamp {
+  font-size: 0.8em;
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+.chat-input input:disabled,
+.chat-input button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.message-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}

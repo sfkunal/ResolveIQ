@@ -1,12 +1,92 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import engine
+from typing import Optional
 
-def main():
-    ticket = engine.get_ticket(0)
-    ticket_string = engine.stringify_ticket(ticket)
-    print("ticket:", ticket_string)
-    vectorstore = engine.load_knowledge_base()
-    relevant_knowledge = engine.find_relevant_knowledge(ticket_string, vectorstore)
-    print(relevant_knowledge[0])
+app = Flask(__name__)
+CORS(app)
 
-main()
-    # chat_model = ChatOllama(model="llama3.2:1b")
+class KnowledgeBaseManager:
+    _instance: Optional['KnowledgeBaseManager'] = None
+    _vectorstore = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(KnowledgeBaseManager, cls).__new__(cls)
+            cls._instance._vectorstore = engine.load_knowledge_base()
+        return cls._instance
+
+    @property
+    def vectorstore(self):
+        return self._vectorstore
+
+# Initialize the knowledge base when the server starts
+kb_manager = KnowledgeBaseManager()
+
+@app.route('/api/tickets', methods=['GET'])
+def get_tickets():
+    try:
+        tickets = engine.get_tickets()
+        return jsonify(tickets)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/tickets/<int:ticket_id>/solve', methods=['POST'])
+def solve_ticket(ticket_id):
+    try:
+        # Get the ticket
+        ticket = engine.get_ticket(ticket_id)
+        ticket_string = engine.stringify_ticket(ticket)
+
+        # Use the singleton vectorstore
+        relevant_knowledge = engine.find_relevant_knowledge(
+            ticket_string, 
+            kb_manager.vectorstore
+        )
+        
+        # Generate response
+        response = engine.generate_response(ticket_string, relevant_knowledge[0])
+        
+        return jsonify({
+            "ticket": ticket,
+            "response": response,
+            "relevant_knowledge": relevant_knowledge[0]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    try:
+        data = request.json
+        ticket_id = data.get('ticketId')
+        message = data.get('message')
+        
+        if not ticket_id or not message:
+            return jsonify({"error": "Missing ticketId or message"}), 400
+
+        # Get the ticket context
+        ticket = engine.get_ticket(ticket_id)
+        ticket_string = engine.stringify_ticket(ticket)
+        
+        # Find relevant knowledge
+        relevant_knowledge = engine.find_relevant_knowledge(
+            ticket_string + "\n" + message, 
+            kb_manager.vectorstore
+        )
+        
+        # Generate response
+        response = engine.generate_response(
+            ticket_string + "\nUser message: " + message,
+            relevant_knowledge[0]
+        )
+        
+        return jsonify({
+            "response": response,
+            "relevant_knowledge": relevant_knowledge[0]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)

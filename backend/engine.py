@@ -50,3 +50,38 @@ def find_relevant_knowledge(ticket_string, vectorstore, top_k=3):
     relevant_chunks = vectorstore.similarity_search(ticket_string, k=top_k)
     return [doc.page_content for doc in relevant_chunks]
 
+class ChatModel:
+    _instance = None
+    _model = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(ChatModel, cls).__new__(cls)
+            cls._instance._model = ChatOllama(model="llama3.2:1b")
+        return cls._instance
+
+    @property
+    def model(self):
+        return self._model
+
+def generate_response(ticket_string, relevant_knowledge):
+    chat_model = ChatModel().model
+    messages = [
+        SystemMessage(content="You are a helpful AI assistant. Use the relevant knowledge to solve the ticket."),
+        HumanMessage(content="Ticket: " + ticket_string),
+        HumanMessage(content="Relevant knowledge: " + relevant_knowledge)
+    ]
+    response = chat_model.invoke(messages)
+    return response.content
+
+def solve_ticket(ticket_index):
+    vectorstore = load_knowledge_base()
+    
+    ticket = get_ticket(ticket_index)
+    ticket_string = stringify_ticket(ticket)
+
+    relevant_knowledge = find_relevant_knowledge(ticket_string, vectorstore)
+    response = generate_response(ticket_string, relevant_knowledge[0])
+
+    return response
+
