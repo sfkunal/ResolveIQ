@@ -5,6 +5,7 @@ import TicketDetails from './TicketDetails.tsx';
 import Chat from './Chat.tsx';
 
 interface Ticket {
+  id: number;
   title: string;
   author: string;
   time: string;
@@ -18,7 +19,7 @@ function App() {
 
   const handleTicketSelect = (ticket: Ticket, index: number) => {
     setSelectedTicket(ticket);
-    setSelectedTicketId(index);
+    setSelectedTicketId(ticket.id);
   };
   
   return (

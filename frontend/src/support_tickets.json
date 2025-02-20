@@ -1,6 +1,7 @@
 {
     "tickets": [
       {
+        "id": 1,
         "title": "Auto Assignment Not Working",
         "author": "Sarah Chen",
         "time": "2025-02-06T09:23:15Z",
@@ -8,6 +9,7 @@
         "description": "I haven't received any auto assignments for the past 2 hours. I've checked my status and I'm set as 'Available'. My queue is empty but I know there are cases in the general pool. Please help troubleshoot why I'm not getting assignments."
       },
       {
+        "id": 2,
         "title": "Request to Block Cases from Specific Region",
         "author": "Michael Rodriguez",
         "time": "2025-02-06T10:45:32Z",
@@ -15,6 +17,7 @@
         "description": "I need to stop receiving cases from the APAC region as I don't have the language capabilities to handle them effectively. Is there a way to update my assignment rules to exclude these cases?"
       },
       {
+        "id": 3,
         "title": "Time Zone Update Required",
         "author": "Emma Thompson",
         "time": "2025-02-06T08:15:00Z",

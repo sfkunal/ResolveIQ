@@ -24,8 +24,16 @@ const Chat: React.FC<ChatProps> = ({ ticketId }) => {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    console.log('Debug state:', {
+      ticketId,
+      isLoading,
+      isDisabled: !ticketId || isLoading
+    });
+  }, [ticketId, isLoading]);
+
   const handleSendMessage = async () => {
-    if (!ticketId || !inputMessage.trim()) return;
+    if (ticketId === null || !inputMessage.trim()) return;
 
     const userMessage: Message = {
       content: inputMessage,
@@ -36,6 +44,12 @@ const Chat: React.FC<ChatProps> = ({ ticketId }) => {
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
+
+    console.log("sending" + JSON.stringify({
+        ticketId: ticketId,
+        message: inputMessage
+      }))
+    
 
     try {
       const response = await fetch('http://127.0.0.1:5000/api/chat', {
@@ -93,11 +107,11 @@ const Chat: React.FC<ChatProps> = ({ ticketId }) => {
           onChange={(e) => setInputMessage(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
           placeholder="Type your message..."
-          disabled={!ticketId || isLoading}
+          disabled={ticketId === null || isLoading}
         />
         <button 
           onClick={handleSendMessage}
-          disabled={!ticketId || isLoading}
+          disabled={ticketId === null || isLoading}
         >
           Send
         </button>

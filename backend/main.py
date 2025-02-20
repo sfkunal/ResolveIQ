@@ -66,7 +66,7 @@ def chat():
             return jsonify({"error": "Missing ticketId or message"}), 400
 
         # Get the ticket context
-        ticket = engine.get_ticket(ticket_id)
+        ticket = engine.get_ticket(ticket_id-1)
         ticket_string = engine.stringify_ticket(ticket)
         
         # Find relevant knowledge
