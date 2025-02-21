@@ -2,6 +2,7 @@ import React from 'react';
 import ticketData from './support_tickets.json';
 
 interface Ticket {
+  id: number;
   title: string;
   author: string;
   time: string;
@@ -10,12 +11,16 @@ interface Ticket {
 }
 
 interface TicketListProps {
-  onSelectTicket?: (ticket: Ticket) => void;
+  onSelectTicket: (ticket: Ticket) => void;
 }
 
 const TicketList: React.FC<TicketListProps> = ({ onSelectTicket }) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
+  };
+
+  const handleDragStart = (ticket: Ticket, e: React.DragEvent) => {
+    e.dataTransfer.setData('ticket', JSON.stringify(ticket));
   };
 
   return (
@@ -24,7 +29,9 @@ const TicketList: React.FC<TicketListProps> = ({ onSelectTicket }) => {
         <div 
           key={index} 
           className="ticket-item"
-          onClick={() => onSelectTicket?.(ticket)}
+          draggable
+          onDragStart={(e) => handleDragStart(ticket, e)}
+          onClick={() => onSelectTicket(ticket)}
         >
           <div className={`status-badge ${ticket.status.toLowerCase()}`}>
             {ticket.status}

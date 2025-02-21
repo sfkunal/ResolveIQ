@@ -259,3 +259,204 @@
   white-space: pre-wrap;
   word-wrap: break-word;
 }
+
+.right-column {
+  flex: 1;
+  padding: 20px;
+  border-left: 1px solid #e0e0e0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.knowledge-wiki {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.knowledge-wiki h3 {
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.wiki-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 16px;
+}
+
+.wiki-content h3 {
+  color: #2c3e50;
+  margin-top: 24px;
+  border-bottom: none;
+}
+
+.wiki-content ul, .wiki-content ol {
+  padding-left: 20px;
+}
+
+.wiki-content li {
+  margin: 8px 0;
+}
+
+.wiki-content strong {
+  color: #34495e;
+}
+
+/* Add custom scrollbar styling */
+.wiki-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.wiki-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.wiki-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.wiki-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.ticket-canvas {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  background: #f8f9fa;
+  overflow: hidden;
+  transition: background-color 0.2s;
+}
+
+.canvas-ticket {
+  position: absolute;
+  width: 300px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  cursor: move;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: box-shadow 0.2s;
+}
+
+.canvas-ticket:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.canvas-ticket h3 {
+  margin: 8px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.canvas-ticket .ticket-content {
+  margin-top: 12px;
+}
+
+.canvas-ticket .ticket-content p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 12px;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.canvas-ticket .ticket-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+}
+
+/* Add a visual indicator for drag and drop */
+.ticket-canvas.drag-over {
+  background: #eef5ff;
+}
+
+/* Make the middle column full-width */
+.middle-column {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.ticket-remove-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ff4444;
+  color: white;
+  border: 2px solid white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.canvas-ticket:hover .ticket-remove-btn {
+  opacity: 1;
+}
+
+.ticket-remove-btn:hover {
+  background: #ff0000;
+}
+
+.ticket-copilot-btn {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: 2px solid white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.2s ease-out;
+}
+
+.canvas-ticket:hover .ticket-copilot-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ticket-copilot-btn:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.25);
+}
+
+.copilot-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* Adjust remove button position to not conflict with copilot button */
+.ticket-remove-btn {
+  right: -10px;
+  top: -10px;
+}
