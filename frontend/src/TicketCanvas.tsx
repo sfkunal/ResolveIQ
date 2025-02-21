@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
+import ChatPanel from './ChatPanel.tsx';
 
 interface Ticket {
   id: number;
@@ -11,6 +12,7 @@ interface Ticket {
   position?: { x: number; y: number };
   copilotResponse?: string;
   isLoadingCopilot?: boolean;
+  chatHistory?: { sender: 'user' | 'ai'; content: string }[];
 }
 
 interface TicketCanvasProps {
@@ -18,6 +20,7 @@ interface TicketCanvasProps {
   onTicketUpdate: (updatedTicket: Ticket) => void;
   onTicketDrop: (ticket: Ticket, x: number, y: number) => void;
   onTicketRemove: (ticketId: number) => void;
+  onChatOpen: (ticketId: number) => void;
 }
 
 const TicketCard: React.FC<{
@@ -25,7 +28,8 @@ const TicketCard: React.FC<{
   onPositionChange: (x: number, y: number) => void;
   onRemove: (ticketId: number) => void;
   onCopilot: (ticketId: number) => void;
-}> = ({ ticket, onPositionChange, onRemove, onCopilot }) => {
+  onChatOpen: (ticketId: number) => void;
+}> = ({ ticket, onPositionChange, onRemove, onCopilot, onChatOpen }) => {
   const nodeRef = useRef<HTMLDivElement>(null);
   
   const handleDrag = (_e: DraggableEvent, data: DraggableData) => {
@@ -63,6 +67,20 @@ const TicketCard: React.FC<{
             </svg>
             {ticket.isLoadingCopilot ? 'Processing...' : 'Activate Copilot'}
           </button>
+          {ticket.copilotResponse && (
+            <button 
+              className="ticket-chat-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onChatOpen(ticket.id);
+              }}
+            >
+              <svg className="chat-icon" viewBox="0 0 24 24">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+              </svg>
+              Chat
+            </button>
+          )}
           <div className={`status-badge ${ticket.status.toLowerCase()}`}>
             {ticket.status}
           </div>
@@ -93,9 +111,11 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
   tickets, 
   onTicketUpdate, 
   onTicketDrop,
-  onTicketRemove 
+  onTicketRemove,
+  onChatOpen
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [activeChatTicketId, setActiveChatTicketId] = useState<number | null>(null);
   
   const handlePositionChange = (ticket: Ticket, x: number, y: number) => {
     onTicketUpdate({
@@ -163,23 +183,53 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
     }
   };
 
+  const handleChatOpen = (ticketId: number) => {
+    setActiveChatTicketId(ticketId);
+  };
+
+  const handleChatClose = () => {
+    setActiveChatTicketId(null);
+  };
+
+  const handleUpdateChatHistory = (ticketId: number, history: { sender: 'user' | 'ai'; content: string }[]) => {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+
+    onTicketUpdate({
+      ...ticket,
+      chatHistory: history
+    });
+  };
+
   return (
-    <div 
-      className={`ticket-canvas ${isDragOver ? 'drag-over' : ''}`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      {tickets.map((ticket) => (
-        <TicketCard
-          key={ticket.id}
-          ticket={ticket}
-          onPositionChange={(x, y) => handlePositionChange(ticket, x, y)}
-          onRemove={onTicketRemove}
-          onCopilot={handleCopilot}
+    <>
+      <div 
+        className={`ticket-canvas ${isDragOver ? 'drag-over' : ''}`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {tickets.map((ticket) => (
+          <TicketCard
+            key={ticket.id}
+            ticket={ticket}
+            onPositionChange={(x, y) => handlePositionChange(ticket, x, y)}
+            onRemove={onTicketRemove}
+            onCopilot={handleCopilot}
+            onChatOpen={handleChatOpen}
+          />
+        ))}
+      </div>
+      {activeChatTicketId && (
+        <ChatPanel
+          ticketId={activeChatTicketId}
+          initialContext={tickets.find(t => t.id === activeChatTicketId)?.copilotResponse || ''}
+          chatHistory={tickets.find(t => t.id === activeChatTicketId)?.chatHistory || []}
+          onClose={handleChatClose}
+          onUpdateHistory={(history) => handleUpdateChatHistory(activeChatTicketId, history)}
         />
-      ))}
-    </div>
+      )}
+    </>
   );
 };
 
