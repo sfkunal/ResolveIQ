@@ -9,6 +9,8 @@ interface Ticket {
   status: string;
   description: string;
   position?: { x: number; y: number };
+  copilotResponse?: string;
+  isLoadingCopilot?: boolean;
 }
 
 interface TicketCanvasProps {
@@ -22,8 +24,9 @@ const TicketCard: React.FC<{
   ticket: Ticket;
   onPositionChange: (x: number, y: number) => void;
   onRemove: (ticketId: number) => void;
-}> = ({ ticket, onPositionChange, onRemove }) => {
-  const nodeRef = useRef(null);
+  onCopilot: (ticketId: number) => void;
+}> = ({ ticket, onPositionChange, onRemove, onCopilot }) => {
+  const nodeRef = useRef<HTMLDivElement>(null);
   
   const handleDrag = (_e: DraggableEvent, data: DraggableData) => {
     onPositionChange(data.x, data.y);
@@ -36,40 +39,51 @@ const TicketCard: React.FC<{
       onStop={handleDrag}
       bounds="parent"
     >
-      <div ref={nodeRef} className="canvas-ticket">
-        <button 
-          className="ticket-remove-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(ticket.id);
-          }}
-        >
-          ×
-        </button>
-        <button 
-          className="ticket-copilot-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            // TODO: Handle Copilot action
-            console.log("Copilot clicked for ticket:", ticket.id);
-          }}
-        >
-          <svg className="copilot-icon" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
-          </svg>
-          Activate Copilot
-        </button>
-        <div className={`status-badge ${ticket.status.toLowerCase()}`}>
-          {ticket.status}
-        </div>
-        <h3>{ticket.title}</h3>
-        <div className="ticket-content">
-          <p>{ticket.description}</p>
-          <div className="ticket-meta">
-            <span>{ticket.author}</span>
-            <span>{new Date(ticket.time).toLocaleDateString()}</span>
+      <div ref={nodeRef} className="ticket-wrapper">
+        <div className="canvas-ticket">
+          <button 
+            className="ticket-remove-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(ticket.id);
+            }}
+          >
+            ×
+          </button>
+          <button 
+            className="ticket-copilot-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCopilot(ticket.id);
+            }}
+            disabled={ticket.isLoadingCopilot}
+          >
+            <svg className="copilot-icon" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+            </svg>
+            {ticket.isLoadingCopilot ? 'Processing...' : 'Activate Copilot'}
+          </button>
+          <div className={`status-badge ${ticket.status.toLowerCase()}`}>
+            {ticket.status}
+          </div>
+          <h3>{ticket.title}</h3>
+          <div className="ticket-content">
+            <p>{ticket.description}</p>
+            <div className="ticket-meta">
+              <span>{ticket.author}</span>
+              <span>{new Date(ticket.time).toLocaleDateString()}</span>
+            </div>
           </div>
         </div>
+        {(ticket.copilotResponse || ticket.isLoadingCopilot) && (
+          <div className="copilot-response">
+            {ticket.isLoadingCopilot ? (
+              <div className="loading-spinner">Loading...</div>
+            ) : (
+              ticket.copilotResponse
+            )}
+          </div>
+        )}
       </div>
     </Draggable>
   );
@@ -88,6 +102,39 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
       ...ticket,
       position: { x, y }
     });
+  };
+
+  const handleCopilot = async (ticketId: number) => {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+
+    console.log("solving ticket id:", ticketId);
+
+    onTicketUpdate({
+      ...ticket,
+      isLoadingCopilot: true
+    });
+
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/api/tickets/${ticketId-1}/solve`, {
+        method: 'POST',
+      });
+      
+      const data = await response.json();
+      
+      onTicketUpdate({
+        ...ticket,
+        isLoadingCopilot: false,
+        copilotResponse: data.response
+      });
+    } catch (error) {
+      console.error('Error calling Copilot:', error);
+      onTicketUpdate({
+        ...ticket,
+        isLoadingCopilot: false,
+        copilotResponse: 'Error: Failed to get Copilot response'
+      });
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -129,6 +176,7 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
           ticket={ticket}
           onPositionChange={(x, y) => handlePositionChange(ticket, x, y)}
           onRemove={onTicketRemove}
+          onCopilot={handleCopilot}
         />
       ))}
     </div>
