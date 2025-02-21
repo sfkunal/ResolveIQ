@@ -274,6 +274,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  text-align: left;
+
 }
 
 .knowledge-wiki h3 {
@@ -382,11 +384,54 @@
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  font-size: 14px;
+  border: 1px solid #e0e0e0;
+  max-height: 300px;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.copilot-response p {
+  margin: 0 0 8px 0;
+  font-size: 0.9em;
   line-height: 1.5;
   color: #333;
-  border: 1px solid #e0e0e0;
-  white-space: pre-wrap;
+}
+
+.copilot-response p:last-child {
+  margin-bottom: 0;
+}
+
+.copilot-response pre {
+  background-color: #f5f5f5;
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.85em;
+}
+
+.copilot-response code {
+  font-family: monospace;
+  font-size: 0.9em;
+  padding: 2px 4px;
+  background-color: #f5f5f5;
+  border-radius: 3px;
+}
+
+.copilot-response ul, 
+.copilot-response ol {
+  font-size: 0.9em;
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.copilot-response h1,
+.copilot-response h2,
+.copilot-response h3,
+.copilot-response h4,
+.copilot-response h5,
+.copilot-response h6 {
+  font-size: 1em;
+  margin: 16px 0 8px 0;
 }
 
 .loading-spinner {
@@ -567,17 +612,37 @@
 }
 
 .system-message {
-  background: #f8f9fa;
+  background-color: #f5f5f5;
   padding: 12px;
   border-radius: 8px;
-  font-size: 14px;
-  color: #666;
+  margin-bottom: 16px;
 }
 
-.system-message pre {
-  margin-top: 8px;
-  white-space: pre-wrap;
-  font-family: inherit;
+.context-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.context-content {
+  font-size: 0.9em;
+  color: #555;
+  text-align: left;
+}
+
+.context-content p {
+  margin: 0;
+}
+
+.context-content pre {
+  background-color: #eee;
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.context-content code {
+  font-family: monospace;
+  font-size: 0.9em;
 }
 
 .chat-input {
@@ -611,4 +676,23 @@
 .chat-input button:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+/* Add custom scrollbar styling for copilot response */
+.copilot-response::-webkit-scrollbar {
+  width: 6px;
+}
+
+.copilot-response::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.copilot-response::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.copilot-response::-webkit-scrollbar-thumb:hover {
+  background: #666;
 }

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
 import ChatPanel from './ChatPanel.tsx';
+import ReactMarkdown from 'react-markdown';
 
 interface Ticket {
   id: number;
@@ -95,11 +96,7 @@ const TicketCard: React.FC<{
         </div>
         {(ticket.copilotResponse || ticket.isLoadingCopilot) && (
           <div className="copilot-response">
-            {ticket.isLoadingCopilot ? (
-              <div className="loading-spinner">Loading...</div>
-            ) : (
-              ticket.copilotResponse
-            )}
+            <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
           </div>
         )}
       </div>

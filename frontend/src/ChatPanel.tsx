@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   sender: 'user' | 'ai';
@@ -100,8 +101,10 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
       </div>
       <div className="chat-messages">
         <div className="system-message">
-          Initial context from Copilot:
-          <pre>{initialContext}</pre>
+          <div className="context-label">Initial context from Copilot:</div>
+          <div className="context-content">
+            <ReactMarkdown>{initialContext}</ReactMarkdown>
+          </div>
         </div>
         {chatHistory.map((msg, index) => (
           <div key={index} className={`message ${msg.sender}-message`}>
