@@ -34,7 +34,7 @@ const TicketCard: React.FC<{
   onCopilot: (ticketId: number) => void;
   onChatOpen: (ticketId: number) => void;
 }> = ({ ticket, onPositionChange, onSizeChange, onRemove, onCopilot, onChatOpen }) => {
-  const nodeRef = useRef<HTMLDivElement>(null);
+  const nodeRef = useRef<HTMLDivElement>(null!);
   
   const handleDrag = (_e: DraggableEvent, data: DraggableData) => {
     onPositionChange(data.x, data.y);
