@@ -339,6 +339,21 @@
   cursor: move;
 }
 
+.canvas-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: auto;
+}
+
+.ticket-canvas {
+  width: 4000px; /* Much larger canvas */
+  height: 4000px;
+  position: relative;
+  background: #f8f9fa;
+  transition: transform 0.2s ease-out;
+}
+
 .canvas-ticket {
   background: white;
   border-radius: 8px;
@@ -348,6 +363,7 @@
   user-select: none;
   transition: box-shadow 0.2s;
   cursor: move;
+  transform-origin: top left;
 }
 
 .canvas-ticket:hover {
@@ -380,70 +396,6 @@
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid #eee;
-}
-
-.copilot-response {
-  margin-top: 8px;
-  background: white;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
-  max-height: 300px;
-  overflow-y: auto;
-  text-align: left;
-}
-
-.copilot-response p {
-  margin: 0 0 8px 0;
-  font-size: 0.9em;
-  line-height: 1.5;
-  color: #333;
-}
-
-.copilot-response p:last-child {
-  margin-bottom: 0;
-}
-
-.copilot-response pre {
-  background-color: #f5f5f5;
-  padding: 8px;
-  border-radius: 4px;
-  overflow-x: auto;
-  font-size: 0.85em;
-}
-
-.copilot-response code {
-  font-family: monospace;
-  font-size: 0.9em;
-  padding: 2px 4px;
-  background-color: #f5f5f5;
-  border-radius: 3px;
-}
-
-.copilot-response ul, 
-.copilot-response ol {
-  font-size: 0.9em;
-  padding-left: 20px;
-  margin: 8px 0;
-}
-
-.copilot-response h1,
-.copilot-response h2,
-.copilot-response h3,
-.copilot-response h4,
-.copilot-response h5,
-.copilot-response h6 {
-  font-size: 1em;
-  margin: 16px 0 8px 0;
-}
-
-.loading-spinner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  color: #666;
 }
 
 .ticket-remove-btn {
@@ -521,21 +473,72 @@
   fill: currentColor;
 }
 
-.ticket-canvas {
-  width: 100%;
-  height: 100vh;
-  position: relative;
-  background: #f8f9fa;
-  overflow: hidden;
+.copilot-response {
+  margin-top: 8px;
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  max-height: 300px;
+  overflow-y: auto;
+  text-align: left;
 }
 
-.ticket-canvas.drag-over {
-  background: #eef5ff;
+.copilot-response p {
+  margin: 0 0 8px 0;
+  font-size: 0.9em;
+  line-height: 1.5;
+  color: #333;
+}
+
+.copilot-response p:last-child {
+  margin-bottom: 0;
+}
+
+.zoom-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.zoom-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.zoom-button:hover {
+  background: #f5f5f5;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.zoom-button svg {
+  width: 20px;
+  height: 20px;
+  color: #666;
+}
+
+/* Ensure draggable items scale properly */
+.canvas-ticket {
+  transform-origin: top left;
 }
 
 .middle-column {
   padding: 0 !important;
-  overflow: hidden !important;
+  overflow: auto !important;
+  position: relative;
 }
 
 /* Chat button */

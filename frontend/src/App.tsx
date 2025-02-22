@@ -52,7 +52,11 @@ function App() {
   const handleTicketRemove = (ticketId: number) => {
     setCanvasTickets(prev => prev.filter(ticket => ticket.id !== ticketId));
   };
-  
+
+  const handleChatOpen = (ticketId: number) => {
+    console.log('Opening chat for ticket:', ticketId);
+  };
+
   return (
     <div className="App">
       <div className="layout">
@@ -67,6 +71,7 @@ function App() {
             onTicketUpdate={handleTicketUpdate}
             onTicketDrop={handleTicketDrop}
             onTicketRemove={handleTicketRemove}
+            onChatOpen={handleChatOpen}
           />
         </div>
 

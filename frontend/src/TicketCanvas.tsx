@@ -146,6 +146,7 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [activeChatTicketId, setActiveChatTicketId] = useState<number | null>(null);
+  const [scale, setScale] = useState(1);
   
   const handlePositionChange = (ticket: Ticket, x: number, y: number) => {
     onTicketUpdate({
@@ -238,13 +239,47 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
     });
   };
 
+  const handleZoomIn = () => {
+    setScale(prev => Math.min(prev + 0.1, 2)); // Max zoom: 2x
+  };
+
+  const handleZoomOut = () => {
+    setScale(prev => Math.max(prev - 0.1, 0.5)); // Min zoom: 0.5x
+  };
+
   return (
-    <>
+    <div className="canvas-container">
+      <div className="zoom-controls">
+        <button 
+          onClick={handleZoomIn} 
+          className="zoom-button"
+          title="Zoom in"
+          aria-label="Zoom in"
+        >
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/>
+          </svg>
+        </button>
+        <button 
+          onClick={handleZoomOut} 
+          className="zoom-button"
+          title="Zoom out"
+          aria-label="Zoom out"
+        >
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path d="M19 13H5v-2h14v2z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
       <div 
         className={`ticket-canvas ${isDragOver ? 'drag-over' : ''}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        style={{
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left'
+        }}
       >
         {tickets.map((ticket) => (
           <TicketCard
@@ -267,7 +302,7 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
           onUpdateHistory={(history) => handleUpdateChatHistory(activeChatTicketId, history)}
         />
       )}
-    </>
+    </div>
   );
 };
 
