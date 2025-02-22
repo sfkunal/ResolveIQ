@@ -33,12 +33,12 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
     scrollToBottom();
   }, [chatHistory]);
 
-  const formatChatHistory = (history: Message[]) => {
-    return history.map(msg => ({
-      role: msg.sender === 'user' ? 'user' : 'assistant',
-      content: msg.content
-    }));
-  };
+  // const formatChatHistory = (history: Message[]) => {
+  //   return history.map(msg => ({
+  //     role: msg.sender === 'user' ? 'user' : 'assistant',
+  //     content: msg.content
+  //   }));
+  // };
 
   const handleSend = async () => {
     if (!message.trim()) return;

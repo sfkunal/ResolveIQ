@@ -17,12 +17,10 @@ interface Ticket {
 }
 
 function App() {
-  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
   const [canvasTickets, setCanvasTickets] = useState<Ticket[]>([]);
   const [activeTab, setActiveTab] = useState<'wiki' | 'databases'>('wiki');
 
   const handleTicketSelect = (ticket: Ticket) => {
-    setSelectedTicketId(ticket.id);
     addTicketToCanvas(ticket);
   };
 
