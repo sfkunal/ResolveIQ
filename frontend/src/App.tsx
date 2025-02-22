@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import './App.css';
 import TicketList from './TicketList.tsx';
 import TicketCanvas from './TicketCanvas.tsx';
-import Chat from './Chat.tsx';
 import KnowledgeWiki from './KnowledgeWiki.tsx';
+import Databases from './Databases.tsx';
 import 'react-resizable/css/styles.css';
 
 interface Ticket {
@@ -19,6 +19,7 @@ interface Ticket {
 function App() {
   const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
   const [canvasTickets, setCanvasTickets] = useState<Ticket[]>([]);
+  const [activeTab, setActiveTab] = useState<'wiki' | 'databases'>('wiki');
 
   const handleTicketSelect = (ticket: Ticket) => {
     setSelectedTicketId(ticket.id);
@@ -76,7 +77,23 @@ function App() {
         </div>
 
         <div className="right-column">
-          <KnowledgeWiki />
+          <div className="tab-buttons">
+            <button 
+              className={`tab-button ${activeTab === 'wiki' ? 'active' : ''}`}
+              onClick={() => setActiveTab('wiki')}
+            >
+              Knowledge Wiki
+            </button>
+            <button 
+              className={`tab-button ${activeTab === 'databases' ? 'active' : ''}`}
+              onClick={() => setActiveTab('databases')}
+            >
+              Databases
+            </button>
+          </div>
+          <div className="tab-content">
+            {activeTab === 'wiki' ? <KnowledgeWiki /> : <Databases />}
+          </div>
         </div>
       </div>
     </div>
