@@ -4,6 +4,7 @@ import TicketList from './TicketList.tsx';
 import TicketCanvas from './TicketCanvas.tsx';
 import Chat from './Chat.tsx';
 import KnowledgeWiki from './KnowledgeWiki.tsx';
+import 'react-resizable/css/styles.css';
 
 interface Ticket {
   id: number;
