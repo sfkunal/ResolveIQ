@@ -237,17 +237,73 @@ class EmployeeDatabase:
             return output
         
 
-def generate_response(ticket_string, relevant_knowledge, chat_history=None):
+def generate_response(ticket_string, relevant_knowledge, employee_name, chat_history=None):
     chat_model = ChatModel().model
+    db = EmployeeDatabase()
+
+    sql_query = f"""
+    SELECT timezone, country, support_region, skills, line_of_business, manager, email, language, status, product, name 
+    FROM employees 
+    WHERE name = ?"""
+
+    with db.get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(sql_query, (employee_name,))
+        employee_data = cursor.fetchone()
+    
+    if employee_data:
+        employee_info = {
+            "timezone": employee_data[0],
+            "country": employee_data[1],
+            "support_region": employee_data[2],
+            "skills": json.loads(employee_data[3]),
+            "line_of_business": employee_data[4],
+            "manager": employee_data[5],
+            "email": employee_data[6],
+            "language": json.loads(employee_data[7]),
+            "status": employee_data[8],
+            "product": employee_data[9],
+            "name": employee_data[10]
+        }
+    else:
+        employee_info = None
     
     
     
     # Build conversation history
     messages = [
-        SystemMessage(content="You are a helpful AI assistant. Use the relevant knowledge to solve the ticket."),
-        HumanMessage(content="Ticket: " + ticket_string),
-        HumanMessage(content="Relevant knowledge: " + relevant_knowledge),
-        HumanMessage(content="This is the schema of my employee table: timezone TEXT, country TEXT, support_region TEXT, skills TEXT, line_of_business TEXT, manager TEXT, email TEXT, language TEXT, status TEXT, product TEXT, name TEXT. If there are relevant keys in this schema to the support ticket or your solution give me the names of those keys after your solution. Make sure the key names you give me are in the provided schema.")
+        SystemMessage(content="""You are a support assistant providing solutions that meaningfully integrate knowledge base guidance with employee context. Follow this structure:
+
+1. Review the ticket and identify:
+   - The core issue to be solved
+   - Key knowledge base instructions
+   - Employee attributes that directly impact the solution
+
+2. Provide a tailored solution that:
+   - Uses knowledge base steps as the foundation
+   - Adapts each step based on the employee's specific situation
+   - Only mentions employee attributes when explaining HOW they affect the implementation
+
+
+3. Each step should demonstrate WHY and HOW employee attributes affect the implementation
+
+4. Focus on actionable adjustments:
+
+Do not:
+- Simply list employee attributes without explaining their impact
+- Include employee information that doesn't change how the solution is implemented
+- Add generic steps that aren't supported by the knowledge base"""),
+        
+        HumanMessage(content=f"""Support Ticket:
+{ticket_string}
+
+Knowledge Base Section:
+{relevant_knowledge}
+
+Employee Information:
+{json.dumps(employee_info, indent=2) if employee_info else "No employee information found"}
+
+Provide a concise step by step solution to the support ticket.""")
     ]
     
     # Add chat history if it exists
@@ -266,7 +322,6 @@ def solve_ticket(ticket_index):
     
     ticket = get_ticket(ticket_index)
     ticket_string = stringify_ticket(ticket)
-
     relevant_knowledge = find_relevant_knowledge(ticket_string, vectorstore)
     response = generate_response(ticket_string, relevant_knowledge[0])
 

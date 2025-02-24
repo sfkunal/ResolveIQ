@@ -37,7 +37,7 @@ def solve_ticket(ticket_id):
         # Get the ticket
         ticket = engine.get_ticket(ticket_id)
         ticket_string = engine.stringify_ticket(ticket)
-
+        ticket_author = ticket['author']
         # Use the singleton vectorstore
         relevant_knowledge = engine.find_relevant_knowledge(
             ticket_string, 
@@ -45,7 +45,7 @@ def solve_ticket(ticket_id):
         )
         
         # Generate response
-        response = engine.generate_response(ticket_string, relevant_knowledge[0])
+        response = engine.generate_response(ticket_string, relevant_knowledge[0], ticket_author)
         
         return jsonify({
             "ticket": ticket,
