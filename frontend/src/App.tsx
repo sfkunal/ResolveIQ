@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import TicketList from './TicketList.tsx';
 import TicketCanvas from './TicketCanvas.tsx';
 import KnowledgeWiki from './KnowledgeWiki.tsx';
 import Databases from './Databases.tsx';
 import 'react-resizable/css/styles.css';
+import ticketData from './support_tickets.json';
 
 interface Ticket {
   id: number;
@@ -17,8 +18,15 @@ interface Ticket {
 }
 
 function App() {
+  // Initialize tickets from JSON data
+  const [tickets, setTickets] = useState<Ticket[]>(ticketData.tickets);
   const [canvasTickets, setCanvasTickets] = useState<Ticket[]>([]);
   const [activeTab, setActiveTab] = useState<'wiki' | 'databases'>('wiki');
+
+  // Handle reordering of tickets in the list
+  const handleTicketsReorder = (reorderedTickets: Ticket[]) => {
+    setTickets(reorderedTickets);
+  };
 
   const handleTicketSelect = (ticket: Ticket) => {
     addTicketToCanvas(ticket);
@@ -61,7 +69,11 @@ function App() {
       <div className="layout">
         <div className="left-column">
           <h2>Support Tickets</h2>
-          <TicketList onSelectTicket={handleTicketSelect} />
+          <TicketList 
+            tickets={tickets} 
+            onTicketsReorder={handleTicketsReorder}
+            onSelectTicket={handleTicketSelect} 
+          />
         </div>
 
         <div className="middle-column">

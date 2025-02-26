@@ -794,3 +794,140 @@
   height: calc(100% - 41px);
   overflow-y: auto;
 }
+
+.ticket-list-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.ticket-tabs {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 0.5rem;
+  background-color: #f5f5f5;
+  border-radius: 4px 4px 0 0;
+}
+
+.ticket-tab {
+  flex: 1;
+  padding: 0.75rem 0.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+  text-align: center;
+}
+
+.ticket-tab.active {
+  border-bottom: 2px solid #1976d2;
+  color: #1976d2;
+  background-color: rgba(25, 118, 210, 0.05);
+}
+
+.ticket-tab:hover:not(.active) {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-bottom: 2px solid #ccc;
+}
+
+.ticket-list {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 0 0 4px 4px;
+}
+
+.no-tickets-message {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* Updated status badge styles for your specific status values */
+.status-badge.open {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-badge.in-progress {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.status-badge.resolved {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.ticket-item {
+  padding: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.15s, box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: white;
+}
+
+/* Add a drag indicator */
+.drag-indicator {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  opacity: 0.5;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ticket-item:hover .drag-indicator {
+  opacity: 0.8;
+}
+
+/* Adjust padding to make room for the drag indicator */
+.ticket-item .status-badge,
+.ticket-item .ticket-title,
+.ticket-item .ticket-meta {
+  margin-left: 25px;
+}
+
+/* When dragging */
+.ticket-item.dragging {
+  opacity: 0.6;
+  transform: scale(0.98);
+}
+
+/* When dragging over */
+.ticket-item.drag-over {
+  border-top: 2px solid #1976d2;
+  background-color: rgba(25, 118, 210, 0.05);
+  transform: translateY(2px);
+}
+
+/* Additional styles for visual feedback */
+.ticket-item:hover {
+  background-color: #f5f5f5;
+}
+
+.ticket-item:active {
+  cursor: grabbing;
+  background-color: #f0f0f0;
+  transform: scale(0.98);
+}
+
+/* Animation for reordering */
+@keyframes reorderHighlight {
+  0% { background-color: rgba(25, 118, 210, 0.1); }
+  100% { background-color: transparent; }
+}
+
+.ticket-item.reordered {
+  animation: reorderHighlight 1s ease;
+}
