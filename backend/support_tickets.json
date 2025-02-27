@@ -1,25 +1,28 @@
 {
-    "tickets": [
+  "tickets": [
       {
-        "title": "Auto Assignment Not Working",
-        "author": "John Smith",
-        "time": "2025-02-06T09:23:15Z",
-        "status": "Open",
-        "description": "I haven't received any auto assignments for the past 2 hours. I've checked my status and I'm set as 'Available'. My queue is empty but I know there are cases in the general pool. Please help troubleshoot why I'm not getting assignments."
+          "id": 1,
+          "title": "Auto Assignment Not Working",
+          "author": "John Smith",
+          "time": "2025-02-06T09:23:15Z",
+          "status": "Open",
+          "description": "I haven't received any auto assignments for the past 2 hours. I've checked my status and I'm set as 'Available'. My queue is empty but I know there are cases in the general pool. Please help troubleshoot why I'm not getting assignments."
       },
       {
-        "title": "Request to Block Cases from Specific Region",
-        "author": "Ana Garcia",
-        "time": "2025-02-06T10:45:32Z",
-        "status": "In Progress",
-        "description": "I need to stop receiving cases from the APAC region as I don't have the language capabilities to handle them effectively. Is there a way to update my assignment rules to exclude these cases?"
+          "id": 2,
+          "title": "Request to Block Cases from Specific Region",
+          "author": "Ana Garcia",
+          "time": "2025-02-06T10:45:32Z",
+          "status": "In Progress",
+          "description": "I need to stop receiving cases from the APAC region as I don't have the language capabilities to handle them effectively. Is there a way to update my assignment rules to exclude these cases?"
       },
       {
-        "title": "Time Zone Update Required",
-        "author": "Tej Kumar",
-        "time": "2025-02-06T08:15:00Z",
-        "status": "Resolved",
-        "description": "I recently relocated to the EST time zone, but my working hours are still showing in PST. Need assistance updating my profile to reflect the correct time zone so my availability is properly tracked."
+          "id": 3,
+          "title": "Time Zone Update Required",
+          "author": "Tej Kumar",
+          "time": "2025-02-06T08:15:00Z",
+          "status": "Resolved",
+          "description": "I recently relocated to the EST time zone, but my working hours are still showing in PST. Need assistance updating my profile to reflect the correct time zone so my availability is properly tracked."
       }
-    ]
-  }
+  ]
+}

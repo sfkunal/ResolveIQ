@@ -14,6 +14,7 @@ interface Ticket {
   position?: { x: number; y: number };
   size?: { width: number; height: number };
   copilotResponse?: string;
+  reference?: string; // Add reference to the Ticket interface
   isLoadingCopilot?: boolean;
   chatHistory?: { sender: 'user' | 'ai'; content: string }[];
 }
@@ -127,7 +128,14 @@ const TicketCard: React.FC<{
                   <span style={{ marginLeft: '10px', color: '#666' }}>Getting Copilot response...</span>
                 </div>
               ) : (
-                <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
+                <>
+                  <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
+                  {ticket.reference && (
+                    <div className="copilot-reference">
+                      <strong>Reference Section:</strong> {ticket.reference}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -183,7 +191,8 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
       onTicketUpdate({
         ...ticket,
         isLoadingCopilot: false,
-        copilotResponse: data.response
+        copilotResponse: data.response,
+        reference: data.reference // Add reference to ticket for display
       });
     } catch (error) {
       console.error('Error calling Copilot:', error);
@@ -306,4 +315,4 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
   );
 };
 
-export default TicketCanvas; 
+export default TicketCanvas;
