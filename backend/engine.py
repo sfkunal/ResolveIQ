@@ -28,8 +28,14 @@ def load_knowledge_base():
     chunks = [chunk.strip() for chunk in kb_content.split('###') if chunk.strip()]
     
     clean_chunks = []
+    titles = []  # Store section titles for reference
+    
     for chunk in chunks:
-        html = markdown.markdown(chunk)
+        sections = chunk.split('\n', 1)
+        title = sections[0].strip() if len(sections) > 1 else "Untitled"
+        titles.append(title)
+        content = sections[1].strip() if len(sections) > 1 else sections[0]
+        html = markdown.markdown(content)
         clean_text = html.replace('<strong>', '').replace('</strong>', '') \
                         .replace('<p>', '').replace('</p>', '') \
                         .replace('<h3>', '').replace('</h3>', '') \
@@ -41,14 +47,13 @@ def load_knowledge_base():
     vectorstore = FAISS.from_texts(
         clean_chunks,
         embeddings,
-        metadatas=[{"chunk_id": i, "source": "knowledge_wiki"} for i in range(len(clean_chunks))]
+        metadatas=[{"chunk_id": i, "title": titles[i], "source": "knowledge_wiki"} for i in range(len(clean_chunks))]
     )
     return vectorstore
 
-
 def find_relevant_knowledge(ticket_string, vectorstore, top_k=3):
     relevant_chunks = vectorstore.similarity_search(ticket_string, k=top_k)
-    return [doc.page_content for doc in relevant_chunks]
+    return [(doc.page_content, doc.metadata) for doc in relevant_chunks]
 
 class ChatModel:
     _instance = None
@@ -99,119 +104,119 @@ class EmployeeDatabase:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             sample_employees = [
-        {
-            "alias": "jsmith",
-            "timezone": "EST",
-            "country": "United States",
-            "support_region": "Americas",
-            "skills": json.dumps(["Troubleshooting", "Technical Writing", "Cloud Infrastructure"]),
-            "line_of_business": "Enterprise",
-            "manager": "mwilson",
-            "email": "john.smith@company.com",
-            "language": json.dumps(["English", "Spanish"]),
-            "status": "Active",
-            "product": "Cloud Platform",
-            "name": "John Smith"
-        },
-        {
-            "alias": "agarcia",
-            "timezone": "PST",
-            "country": "United States",
-            "support_region": "Americas",
-            "skills": json.dumps(["Database Management", "Performance Tuning", "Security"]),
-            "line_of_business": "SMB",
-            "manager": "mwilson",
-            "email": "ana.garcia@company.com",
-            "language": json.dumps(["English", "Spanish", "Portuguese"]),
-            "status": "Active",
-            "product": "Database Solutions",
-            "name": "Ana Garcia"
-        },
-        {
-            "alias": "tkumar",
-            "timezone": "IST",
-            "country": "India",
-            "support_region": "APAC",
-            "skills": json.dumps(["API Integration", "Mobile Development", "Backend Systems"]),
-            "line_of_business": "Enterprise",
-            "manager": "rpatel",
-            "email": "tej.kumar@company.com",
-            "language": json.dumps(["English", "Hindi", "Telugu"]),
-            "status": "Active",
-            "product": "API Gateway",
-            "name": "Tej Kumar"
-        },
-        {
-            "alias": "lwang",
-            "timezone": "CST",
-            "country": "China",
-            "support_region": "APAC",
-            "skills": json.dumps(["Machine Learning", "Data Analytics", "Cloud Architecture"]),
-            "line_of_business": "Enterprise",
-            "manager": "yzhan",
-            "email": "li.wang@company.com",
-            "language": json.dumps(["English", "Mandarin", "Cantonese"]),
-            "status": "Active",
-            "product": "ML Platform",
-            "name": "Li Wang"
-        },
-        {
-            "alias": "mmueller",
-            "timezone": "CET",
-            "country": "Germany",
-            "support_region": "EMEA",
-            "skills": json.dumps(["Security", "Compliance", "Network Infrastructure"]),
-            "line_of_business": "Enterprise",
-            "manager": "kschmidt",
-            "email": "max.mueller@company.com",
-            "language": json.dumps(["English", "German", "French"]),
-            "status": "Active",
-            "product": "Security Suite",
-            "name": "Max Mueller"
-        },
-        {
-            "alias": "slee",
-            "timezone": "KST",
-            "country": "South Korea",
-            "support_region": "APAC",
-            "skills": json.dumps(["Mobile Development", "Frontend Development", "UX Design"]),
-            "line_of_business": "SMB",
-            "manager": "jkim",
-            "email": "sun.lee@company.com",
-            "language": json.dumps(["English", "Korean", "Japanese"]),
-            "status": "Training",
-            "product": "Mobile SDK",
-            "name": "Sun Lee"
-        },
-        {
-            "alias": "olivia",
-            "timezone": "GMT",
-            "country": "United Kingdom",
-            "support_region": "EMEA",
-            "skills": json.dumps(["Product Management", "Technical Support", "Customer Success"]),
-            "line_of_business": "Enterprise",
-            "manager": "robert",
-            "email": "olivia.brown@company.com",
-            "language": json.dumps(["English", "French"]),
-            "status": "Active",
-            "product": "Enterprise Suite",
-            "name": "Olivia Brown"
-        },
-        {
-            "alias": "rpatel",
-            "timezone": "IST",
-            "country": "India",
-            "support_region": "APAC",
-            "skills": json.dumps(["Team Leadership", "Strategy", "Technical Architecture"]),
-            "line_of_business": "Enterprise",
-            "manager": "sarah",
-            "email": "raj.patel@company.com",
-            "language": json.dumps(["English", "Hindi", "Gujarati"]),
-            "status": "Active",
-            "product": "All Products",
-            "name": "Raj Patel"
-        }
-    ]
+                {
+                    "alias": "jsmith",
+                    "timezone": "EST",
+                    "country": "United States",
+                    "support_region": "Americas",
+                    "skills": json.dumps(["Troubleshooting", "Technical Writing", "Cloud Infrastructure"]),
+                    "line_of_business": "Enterprise",
+                    "manager": "mwilson",
+                    "email": "john.smith@company.com",
+                    "language": json.dumps(["English", "Spanish"]),
+                    "status": "Active",
+                    "product": "Cloud Platform",
+                    "name": "John Smith"
+                },
+                {
+                    "alias": "agarcia",
+                    "timezone": "PST",
+                    "country": "United States",
+                    "support_region": "Americas",
+                    "skills": json.dumps(["Database Management", "Performance Tuning", "Security"]),
+                    "line_of_business": "SMB",
+                    "manager": "mwilson",
+                    "email": "ana.garcia@company.com",
+                    "language": json.dumps(["English", "Spanish", "Portuguese"]),
+                    "status": "Active",
+                    "product": "Database Solutions",
+                    "name": "Ana Garcia"
+                },
+                {
+                    "alias": "tkumar",
+                    "timezone": "IST",
+                    "country": "India",
+                    "support_region": "APAC",
+                    "skills": json.dumps(["API Integration", "Mobile Development", "Backend Systems"]),
+                    "line_of_business": "Enterprise",
+                    "manager": "rpatel",
+                    "email": "tej.kumar@company.com",
+                    "language": json.dumps(["English", "Hindi", "Telugu"]),
+                    "status": "Active",
+                    "product": "API Gateway",
+                    "name": "Tej Kumar"
+                },
+                {
+                    "alias": "lwang",
+                    "timezone": "CST",
+                    "country": "China",
+                    "support_region": "APAC",
+                    "skills": json.dumps(["Machine Learning", "Data Analytics", "Cloud Architecture"]),
+                    "line_of_business": "Enterprise",
+                    "manager": "yzhan",
+                    "email": "li.wang@company.com",
+                    "language": json.dumps(["English", "Mandarin", "Cantonese"]),
+                    "status": "Active",
+                    "product": "ML Platform",
+                    "name": "Li Wang"
+                },
+                {
+                    "alias": "mmueller",
+                    "timezone": "CET",
+                    "country": "Germany",
+                    "support_region": "EMEA",
+                    "skills": json.dumps(["Security", "Compliance", "Network Infrastructure"]),
+                    "line_of_business": "Enterprise",
+                    "manager": "kschmidt",
+                    "email": "max.mueller@company.com",
+                    "language": json.dumps(["English", "German", "French"]),
+                    "status": "Active",
+                    "product": "Security Suite",
+                    "name": "Max Mueller"
+                },
+                {
+                    "alias": "slee",
+                    "timezone": "KST",
+                    "country": "South Korea",
+                    "support_region": "APAC",
+                    "skills": json.dumps(["Mobile Development", "Frontend Development", "UX Design"]),
+                    "line_of_business": "SMB",
+                    "manager": "jkim",
+                    "email": "sun.lee@company.com",
+                    "language": json.dumps(["English", "Korean", "Japanese"]),
+                    "status": "Training",
+                    "product": "Mobile SDK",
+                    "name": "Sun Lee"
+                },
+                {
+                    "alias": "olivia",
+                    "timezone": "GMT",
+                    "country": "United Kingdom",
+                    "support_region": "EMEA",
+                    "skills": json.dumps(["Product Management", "Technical Support", "Customer Success"]),
+                    "line_of_business": "Enterprise",
+                    "manager": "robert",
+                    "email": "olivia.brown@company.com",
+                    "language": json.dumps(["English", "French"]),
+                    "status": "Active",
+                    "product": "Enterprise Suite",
+                    "name": "Olivia Brown"
+                },
+                {
+                    "alias": "rpatel",
+                    "timezone": "IST",
+                    "country": "India",
+                    "support_region": "APAC",
+                    "skills": json.dumps(["Team Leadership", "Strategy", "Technical Architecture"]),
+                    "line_of_business": "Enterprise",
+                    "manager": "sarah",
+                    "email": "raj.patel@company.com",
+                    "language": json.dumps(["English", "Hindi", "Gujarati"]),
+                    "status": "Active",
+                    "product": "All Products",
+                    "name": "Raj Patel"
+                }
+            ]
             cursor.executemany("""
                                INSERT INTO employees (alias, timezone, country, support_region, skills, line_of_business, manager, email, language, status, product, name)
                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -235,7 +240,6 @@ class EmployeeDatabase:
             cursor.execute(query)
             output = cursor.fetchall()
             return output
-        
 
 def generate_response(ticket_string, relevant_knowledge, employee_name, chat_history=None):
     chat_model = ChatModel().model
@@ -251,6 +255,8 @@ def generate_response(ticket_string, relevant_knowledge, employee_name, chat_his
         cursor.execute(sql_query, (employee_name,))
         employee_data = cursor.fetchone()
     
+    employee_info = {"No employee information found"}  # Default in case of no data
+    
     if employee_data:
         employee_info = {
             "timezone": employee_data[0],
@@ -265,14 +271,12 @@ def generate_response(ticket_string, relevant_knowledge, employee_name, chat_his
             "product": employee_data[9],
             "name": employee_data[10]
         }
-    else:
-        employee_info = None
     
-    
-    
+    content, metadata = relevant_knowledge  # Unpack content and metadata from relevant_knowledge
+
     # Build conversation history
     messages = [
-        SystemMessage(content="""You are a support assistant providing solutions that meaningfully integrate knowledge base guidance with employee context. Follow this structure:
+        SystemMessage(content=f"""You are a support assistant providing solutions that meaningfully integrate knowledge base guidance with employee context. Follow this structure:
 
 1. Review the ticket and identify:
    - The core issue to be solved
@@ -283,8 +287,6 @@ def generate_response(ticket_string, relevant_knowledge, employee_name, chat_his
    - Uses knowledge base steps as the foundation
    - Adapts each step based on the employee's specific situation
    - Only mentions employee attributes when explaining HOW they affect the implementation
-
-
 3. Each step should demonstrate WHY and HOW employee attributes affect the implementation
 
 4. Focus on actionable adjustments:
@@ -298,14 +300,16 @@ Do not:
 {ticket_string}
 
 Knowledge Base Section:
-{relevant_knowledge}
+{content}
+
+Reference Section: {metadata['title']}
 
 Employee Information:
-{json.dumps(employee_info, indent=2) if employee_info else "No employee information found"}
+{json.dumps(employee_info, indent=2)}
 
 Provide a concise step by step solution to the support ticket.""")
     ]
-    
+
     # Add chat history if it exists
     if chat_history:
         for msg in chat_history:
@@ -315,7 +319,8 @@ Provide a concise step by step solution to the support ticket.""")
                 messages.append(HumanMessage(content=msg['content'], role="assistant"))
     
     response = chat_model.invoke(messages)
-    return response.content
+    return response.content, metadata['title']  # Return both the generated content and the section title
+
 
 def solve_ticket(ticket_index):
     vectorstore = load_knowledge_base()
@@ -326,4 +331,3 @@ def solve_ticket(ticket_index):
     response = generate_response(ticket_string, relevant_knowledge[0])
 
     return response
-

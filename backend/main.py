@@ -45,14 +45,21 @@ def solve_ticket(ticket_id):
         )
         
         # Generate response
-        response = engine.generate_response(ticket_string, relevant_knowledge[0], ticket_author)
+        response_content, reference = engine.generate_response(
+            ticket_string,
+            relevant_knowledge[0],
+            ticket_author
+        )
         
         return jsonify({
             "ticket": ticket,
-            "response": response,
-            "relevant_knowledge": relevant_knowledge[0]
+            "response": response_content,
+            "reference": reference,  # Include the reference in the response
+            "relevant_knowledge": relevant_knowledge[0][0]
         })
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/chat', methods=['POST'])
