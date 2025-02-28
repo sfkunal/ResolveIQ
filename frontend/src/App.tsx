@@ -68,7 +68,14 @@ function App() {
     <div className="App">
       <div className="layout">
         <div className="left-column">
-          <h2>Support Tickets</h2>
+          <div style={{ 
+            paddingTop: '20px', 
+            marginTop: '-20px', 
+            overflow: 'visible'
+          }}>
+            <img src="logo.png" alt="Logo" className="logo-image"></img>
+            <h2 style={{ marginTop: '0' }}>Support Tickets</h2>
+          </div>
           <TicketList 
             tickets={tickets} 
             onTicketsReorder={handleTicketsReorder}

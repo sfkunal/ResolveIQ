@@ -37,6 +37,17 @@
   }
 }
 
+.logo-image {
+  max-width: 25px;
+  height: auto;
+  display: block;
+  margin-top: 12px;
+  margin-left: 6px;
+  margin-bottom: -8px;
+  transform: translateY(-20px); /* Use transform instead of negative margins */
+}
+
+
 .layout {
   display: grid;
   grid-template-columns: 300px 1fr 400px;
@@ -45,12 +56,11 @@
   background-color: #f0f0f0;
 }
 
-.left-column,
-.middle-column,
-.right-column {
+.left-column {
   background-color: white;
   padding: 20px;
   overflow-y: auto;
+  overflow-x: visible; /* Allow horizontal overflow */
 }
 
 .chat-container {
