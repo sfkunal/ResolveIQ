@@ -246,7 +246,7 @@ class EmployeeDatabase:
             output = cursor.fetchall()
             return output
 
-def generate_response(ticket_string, relevant_knowledge, employee_name, chat_history=None):
+def generate_response(ticket_string, relevant_knowledge_list, employee_name, chat_history=None):
     chat_model = ChatModel().model
     db = EmployeeDatabase()
 
@@ -276,43 +276,51 @@ def generate_response(ticket_string, relevant_knowledge, employee_name, chat_his
             "product": employee_data[9],
             "name": employee_data[10]
         }
-    
-    content, metadata = relevant_knowledge  # Unpack content and metadata from relevant_knowledge
 
-    # Build conversation history
+    # Combine knowledge chunks but keep track of them separately
+    combined_content = []
+    knowledge_sections = {}  # Map titles to content for reference
+    for content, metadata in relevant_knowledge_list:
+        combined_content.append(content)
+        knowledge_sections[metadata['title']] = content
+
     messages = [
         SystemMessage(content=f"""You are a support assistant providing solutions that meaningfully integrate knowledge base guidance with employee context. Follow this structure:
 
 1. Review the ticket and identify:
    - The core issue to be solved
-   - Key knowledge base instructions
+   - Key knowledge base instructions that are relevant
    - Employee attributes that directly impact the solution
 
 2. Provide a tailored solution that:
    - Uses knowledge base steps as the foundation
    - Adapts each step based on the employee's specific situation
    - Only mentions employee attributes when explaining HOW they affect the implementation
+   - Cites the specific knowledge base section used with [Section Name] at the end of each relevant step
+
 3. Each step should demonstrate WHY and HOW employee attributes affect the implementation
 
-4. Focus on actionable adjustments:
+4. Only cite knowledge base sections that directly contribute to the solution steps.
 
 Do not:
 - Simply list employee attributes without explaining their impact
 - Include employee information that doesn't change how the solution is implemented
-- Add generic steps that aren't supported by the knowledge base"""),
+- Add generic steps that aren't supported by the knowledge base
+- Cite sections that weren't directly used in the solution"""),
         
         HumanMessage(content=f"""Support Ticket:
 {ticket_string}
 
-Knowledge Base Section:
-{content}
+Available Knowledge Base Sections:
+{'\n\n'.join(combined_content)}
 
-References: {metadata['title']}
+Knowledge Base Section Names:
+{', '.join(knowledge_sections.keys())}
 
 Employee Information:
 {json.dumps(employee_info, indent=2)}
 
-Provide a concise step by step solution to the support ticket.""")
+Provide a concise step by step solution addressing all relevant aspects of the support ticket.""")
     ]
 
     # Add chat history if it exists
@@ -324,8 +332,14 @@ Provide a concise step by step solution to the support ticket.""")
                 messages.append(HumanMessage(content=msg['content'], role="assistant"))
     
     response = chat_model.invoke(messages)
-    # returns content and title of relevant section as well
-    return response.content, metadata['title']
+    
+    # Parse response to find actually used references
+    used_references = []
+    for title in knowledge_sections.keys():
+        if f"[{title}]" in response.content:
+            used_references.append(title)
+    
+    return response.content, used_references
 
 
 # is this being used for anything? can we delete? - nathan

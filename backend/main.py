@@ -35,33 +35,32 @@ def get_tickets():
 @app.route('/api/tickets/<int:ticket_id>/solve', methods=['POST'])
 def solve_ticket(ticket_id):
     try:
-        # Get the ticket
         ticket = engine.get_ticket(ticket_id)
         ticket_string = engine.stringify_ticket(ticket)
         ticket_author = ticket['author']
-        # Use the singleton vectorstore
+        
+        # Get all relevant knowledge chunks
         relevant_knowledge = engine.find_relevant_knowledge(
             ticket_string, 
             kb_manager.vectorstore
         )
         
-        # Generate response
-        response_content, reference = engine.generate_response(
+        # Pass all chunks to generate_response
+        response_content, references = engine.generate_response(
             ticket_string,
-            relevant_knowledge[0],
+            relevant_knowledge,  # Pass all chunks
             ticket_author
         )
         
         return jsonify({
             "ticket": ticket,
             "response": response_content,
-            "reference": reference,  # Include the reference in the response
-            "relevant_knowledge": relevant_knowledge[0][0]
+            "references": references,
+            "relevant_knowledge": [chunk[0] for chunk in relevant_knowledge]
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/chat', methods=['POST'])
 def chat():

@@ -141,12 +141,14 @@ const TicketCard: React.FC<{
                       <div className="reference-list">
                         {ticket.reference.split(',').map((ref, index) => (
                           <div key={index} className="reference-item">
-                            <span className="reference-bullet">-</span> {cleanReference(ref)}
+                            <span className="reference-bullet">•</span> 
+                            {cleanReference(ref)}
                           </div>
                         ))}
                       </div>
                     </div>
                   )}
+
                 </>
               )}
             </div>
@@ -194,18 +196,20 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
     });
 
     try {
-      // Remove the -1, just use the actual ticketId
       const response = await fetch(`http://127.0.0.1:5000/api/tickets/${ticketId}/solve`, {
         method: 'POST',
       });
       
       const data = await response.json();
       
+      // Now references should be an array due to our backend changes
       onTicketUpdate({
         ...ticket,
         isLoadingCopilot: false,
         copilotResponse: data.response,
-        reference: data.reference
+        reference: Array.isArray(data.references) 
+          ? data.references.join(', ')  // Join array into comma-separated string
+          : data.reference  // Fallback to single reference if old format
       });
     } catch (error) {
       console.error('Error calling Copilot:', error);
@@ -216,6 +220,7 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
       });
     }
 };
+
 
 
   const handleDragOver = (e: React.DragEvent) => {
