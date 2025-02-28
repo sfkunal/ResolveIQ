@@ -11,12 +11,17 @@ import sqlite3
 def get_tickets():
     with open('support_tickets.json', 'r') as file:
         data = json.load(file)
-    return data
+        return data['tickets']  # Return just the tickets array
 
-def get_ticket(index):
+
+def get_ticket(ticket_id):
     with open('support_tickets.json', 'r') as file:
         data = json.load(file)
-    return data['tickets'][index]
+        # find ticket by id instead of array index
+        for ticket in data['tickets']:
+            if ticket['id'] == ticket_id:
+                return ticket
+        return None
 
 def stringify_ticket(ticket):
     return f"Title: {ticket['title']}\nDescription: {ticket['description']}"
@@ -323,6 +328,7 @@ Provide a concise step by step solution to the support ticket.""")
     return response.content, metadata['title']
 
 
+# is this being used for anything? can we delete? - nathan
 def solve_ticket(ticket_index):
     vectorstore = load_knowledge_base()
     

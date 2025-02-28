@@ -194,7 +194,8 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
     });
 
     try {
-      const response = await fetch(`http://127.0.0.1:5000/api/tickets/${ticketId-1}/solve`, {
+      // Remove the -1, just use the actual ticketId
+      const response = await fetch(`http://127.0.0.1:5000/api/tickets/${ticketId}/solve`, {
         method: 'POST',
       });
       
@@ -204,7 +205,7 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
         ...ticket,
         isLoadingCopilot: false,
         copilotResponse: data.response,
-        reference: data.reference // adding reference to be displayed on ticket
+        reference: data.reference
       });
     } catch (error) {
       console.error('Error calling Copilot:', error);
@@ -214,7 +215,8 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
         copilotResponse: 'Error: Failed to get Copilot response'
       });
     }
-  };
+};
+
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
