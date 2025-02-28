@@ -28,7 +28,7 @@ def load_knowledge_base():
     chunks = [chunk.strip() for chunk in kb_content.split('###') if chunk.strip()]
     
     clean_chunks = []
-    titles = []  # Store section titles for reference
+    titles = []  # stores the sectoin titles for references
     
     for chunk in chunks:
         sections = chunk.split('\n', 1)
@@ -302,7 +302,7 @@ Do not:
 Knowledge Base Section:
 {content}
 
-Reference Section: {metadata['title']}
+References: {metadata['title']}
 
 Employee Information:
 {json.dumps(employee_info, indent=2)}
@@ -319,7 +319,8 @@ Provide a concise step by step solution to the support ticket.""")
                 messages.append(HumanMessage(content=msg['content'], role="assistant"))
     
     response = chat_model.invoke(messages)
-    return response.content, metadata['title']  # Return both the generated content and the section title
+    # returns content and title of relevant section as well
+    return response.content, metadata['title']
 
 
 def solve_ticket(ticket_index):

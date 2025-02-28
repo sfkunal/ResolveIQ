@@ -14,7 +14,7 @@ interface Ticket {
   position?: { x: number; y: number };
   size?: { width: number; height: number };
   copilotResponse?: string;
-  reference?: string; // Add reference to the Ticket interface
+  reference?: string;
   isLoadingCopilot?: boolean;
   chatHistory?: { sender: 'user' | 'ai'; content: string }[];
 }
@@ -43,6 +43,11 @@ const TicketCard: React.FC<{
 
   const handleResize = (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
     onSizeChange(data.size.width, data.size.height);
+  };
+
+  // remove the markdown asterisks for references bruh
+  const cleanReference = (ref: string): string => {
+    return ref.replace(/\*\*/g, '').trim();
   };
 
   return (
@@ -132,7 +137,14 @@ const TicketCard: React.FC<{
                   <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
                   {ticket.reference && (
                     <div className="copilot-reference">
-                      <strong>Reference Section:</strong> {ticket.reference}
+                      <h4 className="reference-title">Wiki References</h4>
+                      <div className="reference-list">
+                        {ticket.reference.split(',').map((ref, index) => (
+                          <div key={index} className="reference-item">
+                            <span className="reference-bullet">-</span> {cleanReference(ref)}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </>
@@ -192,7 +204,7 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
         ...ticket,
         isLoadingCopilot: false,
         copilotResponse: data.response,
-        reference: data.reference // Add reference to ticket for display
+        reference: data.reference // adding reference to be displayed on ticket
       });
     } catch (error) {
       console.error('Error calling Copilot:', error);
