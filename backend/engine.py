@@ -11,7 +11,7 @@ import sqlite3
 def get_tickets():
     with open('support_tickets.json', 'r') as file:
         data = json.load(file)
-        return data['tickets']  # Return just the tickets array
+        return data['tickets']  # only return tickets array bruh
 
 
 def get_ticket(ticket_id):
