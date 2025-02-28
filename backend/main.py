@@ -73,7 +73,7 @@ def chat():
         if not ticket_id or not message:
             return jsonify({"error": "Missing ticketId or message"}), 400
 
-        # Get ticket by ID (remove the -1)
+        # get ticket by id
         ticket = engine.get_ticket(ticket_id)
         if not ticket:
             return jsonify({"error": f"Ticket {ticket_id} not found"}), 404
@@ -100,7 +100,7 @@ def chat():
             "relevant_knowledge": relevant_knowledge[0][0]
         })
     except Exception as e:
-        print(f"Error in chat: {str(e)}")  # Add logging
+        print(f"Error in chat: {str(e)}")  # logging stuff
         return jsonify({"error": str(e)}), 500
 
 

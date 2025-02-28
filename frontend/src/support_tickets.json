@@ -31,6 +31,14 @@
             "time": "2025-02-06T11:30:00Z",
             "status": "Open",
             "description": "My microphone stopped working in the support portal during customer calls. I've verified it works in other applications and system settings. This is affecting my ability to handle voice support tickets. Need urgent assistance."
+        },
+        {
+            "id": 5,
+            "title": "Microphone and Auto Assignment",
+            "author": "Olivia Brown",
+            "time": "2025-02-06T12:15:00Z",
+            "status": "Open",
+            "description": "Having two critical issues: 1) My microphone isn't working in the support portal, though it works fine in other applications. 2) I'm not receiving any auto-assigned tickets despite being available for the last hour. My status is set to 'Available' but my queue remains empty even though there are tickets in the general pool. Both issues are severely impacting my ability to handle support cases."
         }
     ]
 }
