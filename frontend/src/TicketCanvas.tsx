@@ -137,7 +137,7 @@ const TicketCard: React.FC<{
                   <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
                   {ticket.reference && (
                     <div className="copilot-reference">
-                      <h4 className="reference-title">Wiki References</h4>
+                      <h4 className="reference-title">Knowledge Wiki References</h4>
                       <div className="reference-list">
                         {ticket.reference.split(',').map((ref, index) => (
                           <div key={index} className="reference-item">
