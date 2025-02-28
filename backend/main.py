@@ -73,8 +73,11 @@ def chat():
         if not ticket_id or not message:
             return jsonify({"error": "Missing ticketId or message"}), 400
 
-        # Get the ticket context
-        ticket = engine.get_ticket(ticket_id-1)
+        # Get ticket by ID (remove the -1)
+        ticket = engine.get_ticket(ticket_id)
+        if not ticket:
+            return jsonify({"error": f"Ticket {ticket_id} not found"}), 404
+            
         ticket_string = engine.stringify_ticket(ticket)
         
         # Find relevant knowledge
@@ -83,19 +86,23 @@ def chat():
             kb_manager.vectorstore
         )
         
-        # Generate response with chat history
-        response = engine.generate_response(
+        # Generate response with chat history and author
+        response_content, reference = engine.generate_response(
             ticket_string + "\nUser message: " + message,
             relevant_knowledge[0],
+            ticket['author'],  # Pass the author
             chat_history
         )
         
         return jsonify({
-            "response": response,
-            "relevant_knowledge": relevant_knowledge[0]
+            "response": response_content,
+            "reference": reference,
+            "relevant_knowledge": relevant_knowledge[0][0]
         })
     except Exception as e:
+        print(f"Error in chat: {str(e)}")  # Add logging
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
