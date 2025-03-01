@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
 import { ResizableBox, ResizeCallbackData } from 'react-resizable';
 import ChatPanel from './ChatPanel.tsx';
@@ -37,9 +37,11 @@ const TicketCard: React.FC<{
   onTicketUpdate: (updatedTicket: Ticket) => void;
 }> = ({ ticket, onPositionChange, onSizeChange, onRemove, onCopilot, onChatOpen, onTicketUpdate }) => {
   const nodeRef = useRef<HTMLDivElement>(null!);
+  const ticketRef = useRef<HTMLDivElement>(null!);
   const [isEditing, setIsEditing] = useState(false);
   const [editedResponse, setEditedResponse] = useState(ticket.copilotResponse || '');
   const [showStatusSelector, setShowStatusSelector] = useState(false);
+  const [showControls, setShowControls] = useState(false);
   
   const handleDrag = (_e: DraggableEvent, data: DraggableData) => {
     onPositionChange(data.x, data.y);
@@ -54,7 +56,6 @@ const TicketCard: React.FC<{
       ...ticket,
       status: newStatus
     });
-    setShowStatusSelector(false);
   };
 
   const cleanReference = (ref: string): string => {
@@ -78,91 +79,102 @@ const TicketCard: React.FC<{
           maxConstraints={[500, 400]}
           resizeHandles={['se']}
         >
-          <div className="canvas-ticket drag-handle">
-            <button 
-              className="ticket-remove-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemove(ticket.id);
-              }}
-            >
-              ×
-            </button>
-            <button 
-              className="ticket-copilot-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onCopilot(ticket.id);
-              }}
-              disabled={ticket.isLoadingCopilot}
-            >
-              {ticket.isLoadingCopilot ? (
-                <>
-                  <div className="spinner" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <svg className="copilot-icon" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
-                  </svg>
-                  Activate Copilot
-                </>
-              )}
-            </button>
-            {ticket.copilotResponse && (
-              <button 
-                className="ticket-chat-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChatOpen(ticket.id);
-                }}
-              >
-                <svg className="chat-icon" viewBox="0 0 24 24">
-                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
-                </svg>
-                Chat
-              </button>
+          <div 
+            className="canvas-ticket drag-handle"
+            ref={ticketRef}
+            onMouseEnter={() => setShowControls(true)}
+            onMouseLeave={() => {
+              setShowControls(false);
+              setShowStatusSelector(false);
+            }}
+          >
+            {showControls && (
+              <>
+                <button 
+                  className="ticket-remove-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove(ticket.id);
+                  }}
+                >
+                  ×
+                </button>
+                <button 
+                  className="ticket-copilot-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCopilot(ticket.id);
+                  }}
+                  disabled={ticket.isLoadingCopilot}
+                >
+                  {ticket.isLoadingCopilot ? (
+                    <>
+                      <div className="spinner" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="copilot-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+                      </svg>
+                      Activate Copilot
+                    </>
+                  )}
+                </button>
+                {ticket.copilotResponse && (
+                  <button 
+                    className="ticket-chat-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onChatOpen(ticket.id);
+                    }}
+                  >
+                    <svg className="chat-icon" viewBox="0 0 24 24">
+                      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                    </svg>
+                    Chat
+                  </button>
+                )}
 
-              
+                <div className="status-button-container">
+                  <button 
+                    className="ticket-status-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowStatusSelector(!showStatusSelector);
+                    }}
+                    onMouseEnter={() => setShowStatusSelector(true)}
+                  >
+                    <svg className="status-icon" viewBox="0 0 24 24">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+                    </svg>
+                    Status
+                  </button>
+                  {showStatusSelector && (
+                    <div className="status-selector">
+                      <button 
+                        className={`status-option ${ticket.status === 'Open' ? 'active' : ''}`}
+                        onClick={() => handleStatusChange('Open')}
+                      >
+                        Open
+                      </button>
+                      <button 
+                        className={`status-option ${ticket.status === 'In Progress' ? 'active' : ''}`}
+                        onClick={() => handleStatusChange('In Progress')}
+                      >
+                        In Progress
+                      </button>
+                      <button 
+                        className={`status-option ${ticket.status === 'Resolved' ? 'active' : ''}`}
+                        onClick={() => handleStatusChange('Resolved')}
+                      >
+                        Resolved
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
-
-            <button 
-              className="ticket-status-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowStatusSelector(!showStatusSelector);
-              }}
-            >
-              <svg className="status-icon" viewBox="0 0 24 24">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
-              </svg>
-              Change Status
-            </button>
-            {showStatusSelector && (
-              <div className="status-selector">
-                <button 
-                  className={`status-option ${ticket.status === 'Open' ? 'active' : ''}`}
-                  onClick={() => handleStatusChange('Open')}
-                >
-                  Open
-                </button>
-                <button 
-                  className={`status-option ${ticket.status === 'In Progress' ? 'active' : ''}`}
-                  onClick={() => handleStatusChange('In Progress')}
-                >
-                  In Progress
-                </button>
-                <button 
-                  className={`status-option ${ticket.status === 'Resolved' ? 'active' : ''}`}
-                  onClick={() => handleStatusChange('Resolved')}
-                >
-                  Resolved
-                </button>
-              </div>
-            )}
-
-
             
             <div className={`status-badge ${ticket.status.toLowerCase()}`}>
               {ticket.status}

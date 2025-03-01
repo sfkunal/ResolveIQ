@@ -1073,11 +1073,11 @@
 }
 
 
-/* Status button */
+/* Status button - update to match other buttons */
 .ticket-status-btn {
   position: absolute;
   top: -10px;
-  left: 230px; /* Position after chat button */
+  left: 230px;
   padding: 6px 12px;
   border-radius: 20px;
   background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
@@ -1093,8 +1093,10 @@
   opacity: 0;
   transform: translateY(10px);
   transition: all 0.2s ease-out;
+  white-space: nowrap; /* Add this to prevent wrapping */
 }
 
+/* Show status button only on hover, like other buttons */
 .canvas-ticket:hover .ticket-status-btn {
   opacity: 1;
   transform: translateY(0);
