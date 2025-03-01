@@ -1148,3 +1148,71 @@
 .status-option:not(:last-child) {
   border-bottom: 1px solid #eee;
 }
+
+
+.blue-text-test {
+  color: blue !important;
+}
+
+
+/* Add these styles to your existing App.css */
+
+/* Highlighted title in knowledge wiki */
+.highlighted-title {
+  color: #ff0000 !important;
+  font-weight: bold !important;
+  background-color: #ffeeee !important;
+  padding: 3px 5px !important;
+  border-radius: 3px !important;
+}
+
+/* Reference link styling */
+.reference-link {
+  color: #0066cc;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s;
+  display: inline-block;
+  border-bottom: 1px dashed #0066cc;
+  padding-bottom: 1px;
+}
+
+.reference-link:hover {
+  color: #004499;
+  border-bottom: 1px solid #004499;
+}
+
+.reference-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 6px;
+  padding: 3px 0;
+}
+
+.reference-bullet {
+  margin-right: 8px;
+  color: #0066cc;
+}
+
+/* Make references more visually appealing */
+.copilot-reference {
+  margin-top: 15px;
+  padding: 12px;
+  background-color: #f5f8ff;
+  border-radius: 6px;
+  border-left: 3px solid #0066cc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.reference-title {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #444;
+  font-weight: 600;
+}
+
+.reference-list {
+  font-size: 13px;
+}

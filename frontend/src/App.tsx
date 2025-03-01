@@ -27,6 +27,7 @@ function App() {
   const [tickets, setTickets] = useState<Ticket[]>(ticketData.tickets);
   const [canvasTickets, setCanvasTickets] = useState<Ticket[]>([]);
   const [activeTab, setActiveTab] = useState<'wiki' | 'databases'>('wiki');
+  const [highlightedSection, setHighlightedSection] = useState<string | undefined>(undefined);
 
   // Handle reordering of tickets in the list
   const handleTicketsReorder = (reorderedTickets: Ticket[]) => {
@@ -80,6 +81,21 @@ function App() {
     console.log('Opening chat for ticket:', ticketId);
   };
 
+  const handleSectionHighlight = (section: string) => {
+    console.log("App received section to highlight:", section);
+    
+    // Switch to wiki tab
+    setActiveTab('wiki');
+    
+    // Set highlighted section
+    setHighlightedSection(section);
+    
+    // Clear after a delay
+    setTimeout(() => {
+      setHighlightedSection(undefined);
+    }, 3000);
+  };
+
   // Effect to sync status changes between canvas and list
   useEffect(() => {
     const updatedTickets = tickets.map(ticket => {
@@ -115,6 +131,7 @@ function App() {
             onTicketDrop={handleTicketDrop}
             onTicketRemove={handleTicketRemove}
             onChatOpen={handleChatOpen}
+            onSectionHighlight={handleSectionHighlight}
           />
         </div>
 
@@ -134,7 +151,9 @@ function App() {
             </button>
           </div>
           <div className="tab-content">
-            {activeTab === 'wiki' ? <KnowledgeWiki /> : <Databases />}
+            {activeTab === 'wiki' ? 
+              <KnowledgeWiki highlightedSection={highlightedSection} /> : 
+              <Databases />}
           </div>
         </div>
       </div>

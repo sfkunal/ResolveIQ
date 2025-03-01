@@ -25,6 +25,7 @@ interface TicketCanvasProps {
   onTicketDrop: (ticket: Ticket, x: number, y: number) => void;
   onTicketRemove: (ticketId: number) => void;
   onChatOpen: (ticketId: number) => void;
+  onSectionHighlight: (section: string) => void;
 }
 
 const TicketCard: React.FC<{
@@ -35,7 +36,17 @@ const TicketCard: React.FC<{
   onCopilot: (ticketId: number) => void;
   onChatOpen: (ticketId: number) => void;
   onTicketUpdate: (updatedTicket: Ticket) => void;
-}> = ({ ticket, onPositionChange, onSizeChange, onRemove, onCopilot, onChatOpen, onTicketUpdate }) => {
+  onSectionHighlight: (section: string) => void;
+}> = ({ 
+  ticket, 
+  onPositionChange, 
+  onSizeChange, 
+  onRemove, 
+  onCopilot, 
+  onChatOpen, 
+  onTicketUpdate, 
+  onSectionHighlight 
+}) => {
   const nodeRef = useRef<HTMLDivElement>(null!);
   const ticketRef = useRef<HTMLDivElement>(null!);
   const [isEditing, setIsEditing] = useState(false);
@@ -60,6 +71,12 @@ const TicketCard: React.FC<{
 
   const cleanReference = (ref: string): string => {
     return ref.replace(/\*\*/g, '').trim();
+  };
+
+  const handleReferenceClick = (section: string) => {
+    const cleanedSection = cleanReference(section);
+    console.log("Highlighting section:", cleanedSection);
+    onSectionHighlight(cleanedSection);
   };
 
   return (
@@ -244,11 +261,26 @@ const TicketCard: React.FC<{
                     <div className="copilot-reference">
                       <h4 className="reference-title">Knowledge Wiki References</h4>
                       <div className="reference-list">
-                        {ticket.reference.split(',').map((ref, index) => (
-                          <div key={index} className="reference-item">
-                            <span className="reference-bullet">-</span> {cleanReference(ref)}
-                          </div>
-                        ))}
+                        {ticket.reference.split(',').map((ref, index) => {
+                          const cleanedRef = cleanReference(ref);
+                          return (
+                            <div key={index} className="reference-item">
+                              <span className="reference-bullet">-</span>
+                              <a 
+                                href="#" 
+                                className="reference-link"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  console.log("Clicked reference:", cleanedRef);
+                                  handleReferenceClick(ref);
+                                }}
+                              >
+                                {cleanedRef}
+                              </a>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -267,7 +299,8 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
   onTicketUpdate, 
   onTicketDrop,
   onTicketRemove,
-  onChatOpen
+  onChatOpen,
+  onSectionHighlight
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [activeChatTicketId, setActiveChatTicketId] = useState<number | null>(null);
@@ -417,6 +450,7 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
             onCopilot={handleCopilot}
             onChatOpen={handleChatOpen}
             onTicketUpdate={onTicketUpdate}
+            onSectionHighlight={onSectionHighlight}
           />
         ))}
       </div>
