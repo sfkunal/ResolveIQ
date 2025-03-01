@@ -51,14 +51,12 @@ function App() {
   };
 
   const handleTicketUpdate = (updatedTicket: Ticket) => {
-    // Update canvas tickets
     setCanvasTickets(prev =>
       prev.map(ticket =>
         ticket.id === updatedTicket.id ? updatedTicket : ticket
       )
     );
 
-    // Also update the main tickets list
     setTickets(prev =>
       prev.map(ticket =>
         ticket.id === updatedTicket.id ? {
@@ -84,19 +82,20 @@ function App() {
   const handleSectionHighlight = (section: string) => {
     console.log("App received section to highlight:", section);
     
-    // Switch to wiki tab
+    // highlighting stuff
     setActiveTab('wiki');
-    
-    // Set highlighted section
-    setHighlightedSection(section);
-    
-    // Clear after a delay
+    setHighlightedSection(undefined);
+    //reset
     setTimeout(() => {
-      setHighlightedSection(undefined);
-    }, 3000);
+      setHighlightedSection(section);
+      
+      setTimeout(() => {
+        setHighlightedSection(undefined);
+      }, 5000);
+    }, 50);
   };
 
-  // Effect to sync status changes between canvas and list
+  // sync canvas and list
   useEffect(() => {
     const updatedTickets = tickets.map(ticket => {
       const canvasTicket = canvasTickets.find(ct => ct.id === ticket.id);

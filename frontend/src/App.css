@@ -1155,15 +1155,38 @@
 }
 
 
-/* Add these styles to your existing App.css */
 
 /* Highlighted title in knowledge wiki */
 .highlighted-title {
   color: #ff0000 !important;
-  font-weight: bold !important;
   background-color: #ffeeee !important;
-  padding: 3px 5px !important;
-  border-radius: 3px !important;
+  padding: 5px 8px !important;
+  border-radius: 4px !important;
+  border-left: 4px solid #ff0000 !important;
+  animation: pulse-highlight 2s infinite !important;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.3) !important;
+  transition: all 0.3s ease-in-out !important;
+}
+
+@keyframes pulse-highlight {
+  0% { box-shadow: 0 0 5px rgba(255, 0, 0, 0.3); }
+  50% { box-shadow: 0 0 15px rgba(255, 0, 0, 0.6); }
+  100% { box-shadow: 0 0 5px rgba(255, 0, 0, 0.3); }
+}
+
+/* Wiki content container */
+.wiki-content {
+  height: calc(100vh - 150px);
+  overflow-y: auto;
+  padding: 10px;
+}
+
+/* Wiki content styles */
+.wiki-content h3 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  padding: 5px;
+  border-bottom: 1px solid #eee;
 }
 
 /* Reference link styling */

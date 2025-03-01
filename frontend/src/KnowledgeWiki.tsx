@@ -10,7 +10,6 @@ const KnowledgeWiki: React.FC<KnowledgeWikiProps> = ({ highlightedSection }) => 
   const [wikiContent, setWikiContent] = useState('');
   const wikiRef = useRef<HTMLDivElement>(null);
 
-  // Fetch the wiki content
   useEffect(() => {
     fetch(knowledgeWiki)
       .then(response => response.text())
@@ -21,28 +20,28 @@ const KnowledgeWiki: React.FC<KnowledgeWikiProps> = ({ highlightedSection }) => 
       .catch(error => console.error('Error loading wiki:', error));
   }, []);
 
-  // Apply highlighting when the section changes
+  // highlight only on section change
   useEffect(() => {
     if (!highlightedSection || !wikiRef.current) return;
 
     console.log("Attempting to highlight:", highlightedSection);
     
-    // Find all h3 elements in the wiki content
+
     const h3Elements = wikiRef.current.querySelectorAll('h3');
     
-    // First, remove any existing highlighting
+
     h3Elements.forEach(el => {
       el.classList.remove('highlighted-title');
     });
     
-    // Find the h3 that contains the highlighted section text
+    // h3s with da highlighted section text
     let found = false;
     h3Elements.forEach(el => {
       if (el.textContent && el.textContent.includes(highlightedSection)) {
         console.log("Found matching element:", el.textContent);
         el.classList.add('highlighted-title');
         
-        // Scroll to the element
+        // scroll to element
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         found = true;
       }
@@ -52,7 +51,7 @@ const KnowledgeWiki: React.FC<KnowledgeWikiProps> = ({ highlightedSection }) => 
       console.log("No matching heading found for:", highlightedSection);
     }
     
-    // Remove highlighting after a delay
+    // remove  after 3 secs
     const timer = setTimeout(() => {
       h3Elements.forEach(el => {
         el.classList.remove('highlighted-title');

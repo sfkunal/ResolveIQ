@@ -338,12 +338,25 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
       
       const data = await response.json();
       
+      // Update the ticket with the response data
       onTicketUpdate({
         ...ticket,
         isLoadingCopilot: false,
         copilotResponse: data.response,
         reference: data.reference
       });
+      
+  // Auto highlight the referenced section
+      if (data.reference) {
+        // Handle multiple references (we'll just highlight the first one)
+        const references = data.reference.split(',');
+        if (references.length > 0) {
+          const firstReference = references[0]; // Just use the first reference for auto-highlighting
+          const cleanedReference = firstReference.replace(/\*\*/g, '').trim(); // Clean the reference directly
+          console.log("Auto highlighting reference:", cleanedReference);
+          onSectionHighlight(cleanedReference);
+        }
+      }
     } catch (error) {
       console.error('Error calling Copilot:', error);
       onTicketUpdate({
