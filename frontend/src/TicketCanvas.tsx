@@ -15,6 +15,7 @@ interface Ticket {
   size?: { width: number; height: number };
   copilotResponse?: string;
   reference?: string;
+  sourceType?: string; // Added to track if solution came from knowledge_wiki or resolved_ticket
   isLoadingCopilot?: boolean;
   chatHistory?: { sender: 'user' | 'ai'; content: string }[];
 }
@@ -25,6 +26,8 @@ interface TicketCanvasProps {
   onTicketDrop: (ticket: Ticket, x: number, y: number) => void;
   onTicketRemove: (ticketId: number) => void;
   onChatOpen: (ticketId: number) => void;
+  onTicketResolve: (ticketId: number, solution: string) => void;
+  onSolutionFeedback: (ticketId: number, helpful: boolean) => void;
 }
 
 const TicketCard: React.FC<{
@@ -35,13 +38,27 @@ const TicketCard: React.FC<{
   onCopilot: (ticketId: number) => void;
   onChatOpen: (ticketId: number) => void;
   onTicketUpdate: (updatedTicket: Ticket) => void;
-}> = ({ ticket, onPositionChange, onSizeChange, onRemove, onCopilot, onChatOpen, onTicketUpdate }) => {
+  onTicketResolve: (ticketId: number, solution: string) => void;
+  onSolutionFeedback: (ticketId: number, helpful: boolean) => void;
+}> = ({ 
+  ticket, 
+  onPositionChange, 
+  onSizeChange, 
+  onRemove, 
+  onCopilot, 
+  onChatOpen, 
+  onTicketUpdate,
+  onTicketResolve,
+  onSolutionFeedback
+}) => {
   const nodeRef = useRef<HTMLDivElement>(null!);
   const ticketRef = useRef<HTMLDivElement>(null!);
   const [isEditing, setIsEditing] = useState(false);
   const [editedResponse, setEditedResponse] = useState(ticket.copilotResponse || '');
   const [showStatusSelector, setShowStatusSelector] = useState(false);
   const [showControls, setShowControls] = useState(false);
+  const [showFeedbackButtons, setShowFeedbackButtons] = useState(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   
   const handleDrag = (_e: DraggableEvent, data: DraggableData) => {
     onPositionChange(data.x, data.y);
@@ -56,10 +73,25 @@ const TicketCard: React.FC<{
       ...ticket,
       status: newStatus
     });
+    
+    // If status changed to "Resolved", suggest saving the solution
+    if (newStatus === 'Resolved' && ticket.copilotResponse) {
+      // Either auto-save or show a confirmation dialog
+      if (window.confirm('Would you like to save this solution to help with similar tickets in the future?')) {
+        onTicketResolve(ticket.id, ticket.copilotResponse);
+      }
+    }
   };
 
   const cleanReference = (ref: string): string => {
     return ref.replace(/\*\*/g, '').trim();
+  };
+
+  const getSourceLabel = () => {
+    if (ticket.sourceType === 'resolved_ticket') {
+      return 'Solution from previous ticket';
+    }
+    return 'Knowledge Wiki References';
   };
 
   return (
@@ -197,6 +229,40 @@ const TicketCard: React.FC<{
                 </div>
               ) : (
                 <>
+                  {ticket.sourceType === 'resolved_ticket' && (
+                    <div className="solution-source">
+                      <span className="solution-badge">Previously Resolved Solution</span>
+                      
+                      {!feedbackSubmitted && (
+                        <div className="feedback-buttons">
+                          <span>Was this helpful?</span>
+                          <button 
+                            className="feedback-btn yes"
+                            onClick={() => {
+                              onSolutionFeedback(ticket.id, true);
+                              setFeedbackSubmitted(true);
+                            }}
+                          >
+                            👍 Yes
+                          </button>
+                          <button 
+                            className="feedback-btn no"
+                            onClick={() => {
+                              onSolutionFeedback(ticket.id, false);
+                              setFeedbackSubmitted(true);
+                            }}
+                          >
+                            👎 No
+                          </button>
+                        </div>
+                      )}
+                      
+                      {feedbackSubmitted && (
+                        <div className="feedback-thanks">Thank you for your feedback!</div>
+                      )}
+                    </div>
+                  )}
+                  
                   {!isEditing ? (
                     <>
                       <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
@@ -240,9 +306,10 @@ const TicketCard: React.FC<{
                       </div>
                     </div>
                   )}
+                  
                   {ticket.reference && (
                     <div className="copilot-reference">
-                      <h4 className="reference-title">Knowledge Wiki References</h4>
+                      <h4 className="reference-title">{getSourceLabel()}</h4>
                       <div className="reference-list">
                         {ticket.reference.split(',').map((ref, index) => (
                           <div key={index} className="reference-item">
@@ -267,7 +334,9 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
   onTicketUpdate, 
   onTicketDrop,
   onTicketRemove,
-  onChatOpen
+  onChatOpen,
+  onTicketResolve,
+  onSolutionFeedback
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [activeChatTicketId, setActiveChatTicketId] = useState<number | null>(null);
@@ -309,7 +378,8 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
         ...ticket,
         isLoadingCopilot: false,
         copilotResponse: data.response,
-        reference: data.reference
+        reference: data.reference,
+        sourceType: data.source_type // Store the source type (knowledge_wiki or resolved_ticket)
       });
     } catch (error) {
       console.error('Error calling Copilot:', error);
@@ -319,6 +389,14 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
         copilotResponse: 'Error: Failed to get Copilot response'
       });
     }
+  };
+
+  const handleTicketResolve = (ticketId: number, solution: string) => {
+    onTicketResolve(ticketId, solution);
+  };
+
+  const handleSolutionFeedback = (ticketId: number, helpful: boolean) => {
+    onSolutionFeedback(ticketId, helpful);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -349,6 +427,7 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
 
   const handleChatOpen = (ticketId: number) => {
     setActiveChatTicketId(ticketId);
+    onChatOpen(ticketId);
   };
 
   const handleChatClose = () => {
@@ -417,6 +496,8 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
             onCopilot={handleCopilot}
             onChatOpen={handleChatOpen}
             onTicketUpdate={onTicketUpdate}
+            onTicketResolve={handleTicketResolve}
+            onSolutionFeedback={handleSolutionFeedback}
           />
         ))}
       </div>

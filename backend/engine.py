@@ -7,6 +7,7 @@ import markdown
 from langchain_community.chat_models import ChatOllama
 from langchain_core.messages import HumanMessage, SystemMessage
 import sqlite3
+import datetime
 
 def get_tickets():
     with open('support_tickets.json', 'r') as file:
@@ -27,38 +28,195 @@ def stringify_ticket(ticket):
     return f"Title: {ticket['title']}\nDescription: {ticket['description']}"
 
 def load_knowledge_base():
-    with open('knowledge_wiki.md', 'r') as file:
-        kb_content = file.read()
+    # Load knowledge wiki
+    kb_chunks = load_knowledge_wiki()
     
-    chunks = [chunk.strip() for chunk in kb_content.split('###') if chunk.strip()]
+    # Load resolved tickets if they exist
+    resolved_chunks = load_resolved_tickets()
     
-    clean_chunks = []
-    titles = []  # stores the sectoin titles for references
+    # Combine all chunks
+    all_chunks = kb_chunks + resolved_chunks
+    texts = [chunk['text'] for chunk in all_chunks]
+    metadatas = [chunk['metadata'] for chunk in all_chunks]
     
-    for chunk in chunks:
-        sections = chunk.split('\n', 1)
-        title = sections[0].strip() if len(sections) > 1 else "Untitled"
-        titles.append(title)
-        content = sections[1].strip() if len(sections) > 1 else sections[0]
-        html = markdown.markdown(content)
-        clean_text = html.replace('<strong>', '').replace('</strong>', '') \
-                        .replace('<p>', '').replace('</p>', '') \
-                        .replace('<h3>', '').replace('</h3>', '') \
-                        .replace('<ol>', '').replace('</ol>', '') \
-                        .replace('<li>', '').replace('</li>', '')
-        clean_chunks.append(clean_text)
-    
+    # Create vectorstore from all chunks
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     vectorstore = FAISS.from_texts(
-        clean_chunks,
+        texts,
         embeddings,
-        metadatas=[{"chunk_id": i, "title": titles[i], "source": "knowledge_wiki"} for i in range(len(clean_chunks))]
+        metadatas=metadatas
     )
     return vectorstore
 
-def find_relevant_knowledge(ticket_string, vectorstore, top_k=3):
-    relevant_chunks = vectorstore.similarity_search(ticket_string, k=top_k)
-    return [(doc.page_content, doc.metadata) for doc in relevant_chunks]
+def load_knowledge_wiki():
+    try:
+        with open('knowledge_wiki.md', 'r') as file:
+            kb_content = file.read()
+        
+        chunks = [chunk.strip() for chunk in kb_content.split('###') if chunk.strip()]
+        
+        result_chunks = []
+        
+        for i, chunk in enumerate(chunks):
+            sections = chunk.split('\n', 1)
+            title = sections[0].strip() if len(sections) > 1 else "Untitled"
+            content = sections[1].strip() if len(sections) > 1 else sections[0]
+            html = markdown.markdown(content)
+            clean_text = html.replace('<strong>', '').replace('</strong>', '') \
+                            .replace('<p>', '').replace('</p>', '') \
+                            .replace('<h3>', '').replace('</h3>', '') \
+                            .replace('<ol>', '').replace('</ol>', '') \
+                            .replace('<li>', '').replace('</li>', '')
+            
+            result_chunks.append({
+                'text': clean_text,
+                'metadata': {
+                    "chunk_id": i,
+                    "title": title,
+                    "source": "knowledge_wiki",
+                    "doc_type": "knowledge_wiki",
+                    "date_added": datetime.datetime.now().isoformat()
+                }
+            })
+        
+        return result_chunks
+    except FileNotFoundError:
+        print("Knowledge wiki file not found.")
+        return []
+
+def load_resolved_tickets():
+    try:
+        with open('resolved_tickets.json', 'r') as file:
+            resolved_data = json.load(file)
+            
+        result_chunks = []
+        
+        for i, ticket in enumerate(resolved_data):
+            # Format the ticket into a comprehensive chunk including both problem and solution
+            text = f"Problem: {ticket['problem']}\nSolution: {ticket['solution']}"
+            
+            metadata = {
+                "chunk_id": f"rt_{i}",
+                "title": ticket['title'],
+                "source": "resolved_ticket",
+                "doc_type": "resolved_ticket",
+                "ticket_id": ticket['ticket_id'],
+                "resolved_by": ticket['resolved_by'],
+                "resolved_at": ticket['resolved_at'],
+                "effectiveness_score": ticket.get('effectiveness_score', 1.0),
+                "feedback_count": ticket.get('feedback_count', 0)
+            }
+            
+            result_chunks.append({
+                'text': text,
+                'metadata': metadata
+            })
+            
+        return result_chunks
+    except FileNotFoundError:
+        print("No resolved tickets file found yet. Starting with empty resolved tickets.")
+        # Create the file with an empty array
+        with open('resolved_tickets.json', 'w') as file:
+            json.dump([], file)
+        return []
+
+def find_relevant_knowledge(ticket_string, vectorstore, top_k=3, include_resolved=True):
+    """Find relevant knowledge for a ticket, with option to prioritize resolved tickets"""
+    filters = None
+    if not include_resolved:
+        # Only search knowledge wiki if resolved tickets should be excluded
+        filters = {"doc_type": "knowledge_wiki"}
+    
+    # First prioritize searching resolved tickets with high effectiveness 
+    relevant_chunks = vectorstore.similarity_search(
+        ticket_string, 
+        k=top_k, 
+        filter=filters
+    )
+    
+    # Sort results to prioritize resolved tickets if they exist
+    # This ensures resolved tickets appear first in the results list
+    sorted_chunks = sorted(
+        relevant_chunks, 
+        key=lambda doc: 0 if doc.metadata.get('doc_type') == 'resolved_ticket' else 1
+    )
+    
+    return [(doc.page_content, doc.metadata) for doc in sorted_chunks]
+
+def add_resolved_ticket(ticket, solution, resolved_by):
+    # Load existing resolved tickets
+    try:
+        with open('resolved_tickets.json', 'r') as file:
+            resolved_tickets = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        resolved_tickets = []
+    
+    # Create new resolved ticket entry
+    new_entry = {
+        'ticket_id': ticket['id'],
+        'title': ticket['title'],
+        'problem': ticket['description'],
+        'solution': solution,
+        'resolved_by': resolved_by,
+        'resolved_at': datetime.datetime.now().isoformat(),
+        'effectiveness_score': 1.0,  # Initial score
+        'feedback_count': 0
+    }
+    
+    # Check if this ticket has already been resolved before
+    for i, existing in enumerate(resolved_tickets):
+        if existing['ticket_id'] == ticket['id']:
+            # Update existing entry instead of adding new one
+            resolved_tickets[i] = new_entry
+            break
+    else:
+        # Add new entry if not already present
+        resolved_tickets.append(new_entry)
+    
+    # Save updated resolved tickets
+    with open('resolved_tickets.json', 'w') as file:
+        json.dump(resolved_tickets, file, indent=2)
+    
+    # Return the new entry for vectorization if needed
+    return new_entry
+
+def update_solution_effectiveness(ticket_id, was_helpful):
+    """Update solution effectiveness based on feedback"""
+    try:
+        with open('resolved_tickets.json', 'r') as file:
+            resolved_tickets = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return False
+    
+    # Find and update the specific ticket
+    updated = False
+    for i, ticket in enumerate(resolved_tickets):
+        if ticket['ticket_id'] == ticket_id:
+            # Update effectiveness score using simple weighted average
+            current_score = ticket['effectiveness_score']
+            current_count = ticket['feedback_count']
+            
+            new_score = 1.0 if was_helpful else 0.0
+            updated_count = current_count + 1
+            
+            # Weighted average formula
+            if current_count == 0:
+                updated_score = new_score
+            else:
+                updated_score = ((current_score * current_count) + new_score) / updated_count
+            
+            # Update the ticket
+            resolved_tickets[i]['effectiveness_score'] = updated_score
+            resolved_tickets[i]['feedback_count'] = updated_count
+            updated = True
+            break
+    
+    if updated:
+        # Save updated tickets
+        with open('resolved_tickets.json', 'w') as file:
+            json.dump(resolved_tickets, file, indent=2)
+    
+    return updated
 
 class ChatModel:
     _instance = None
@@ -324,17 +482,9 @@ Provide a concise step by step solution to the support ticket.""")
                 messages.append(HumanMessage(content=msg['content'], role="assistant"))
     
     response = chat_model.invoke(messages)
-    # returns content and title of relevant section as well
-    return response.content, metadata['title']
-
-
-# is this being used for anything? can we delete? - nathan
-def solve_ticket(ticket_index):
-    vectorstore = load_knowledge_base()
     
-    ticket = get_ticket(ticket_index)
-    ticket_string = stringify_ticket(ticket)
-    relevant_knowledge = find_relevant_knowledge(ticket_string, vectorstore)
-    response = generate_response(ticket_string, relevant_knowledge[0])
-
-    return response
+    # Determine source type for the UI to display differently
+    source_type = metadata.get('doc_type', 'knowledge_wiki')
+    
+    # returns content and title of relevant section as well
+    return response.content, metadata['title'], source_type

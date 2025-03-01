@@ -18,6 +18,7 @@ interface Ticket {
   size?: { width: number; height: number };
   copilotResponse?: string;
   reference?: string;
+  sourceType?: string;
   isLoadingCopilot?: boolean;
   chatHistory?: { sender: 'user' | 'ai'; content: string }[];
 }
@@ -80,6 +81,73 @@ function App() {
     console.log('Opening chat for ticket:', ticketId);
   };
 
+  const handleTicketResolve = async (ticketId: number, solution: string) => {
+    try {
+      // Call the API to store the resolved ticket
+      const response = await fetch(`http://127.0.0.1:5000/api/tickets/${ticketId}/resolve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          solution: solution,
+          resolved_by: null, // The backend will use the ticket author if this is null
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Show success notification to user
+        alert('Solution saved to knowledge base for future similar tickets!');
+        
+        // Update the ticket status to "Resolved" if not already
+        const updatedTickets = tickets.map(ticket => 
+          ticket.id === ticketId && ticket.status !== 'Resolved' 
+            ? { ...ticket, status: 'Resolved' } 
+            : ticket
+        );
+        setTickets(updatedTickets);
+        
+        // Also update canvas tickets
+        const updatedCanvasTickets = canvasTickets.map(ticket => 
+          ticket.id === ticketId && ticket.status !== 'Resolved' 
+            ? { ...ticket, status: 'Resolved' } 
+            : ticket
+        );
+        setCanvasTickets(updatedCanvasTickets);
+      } else {
+        alert('Failed to save solution: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error resolving ticket:', error);
+      alert('Failed to save solution due to a server error.');
+    }
+  };
+
+  const handleSolutionFeedback = async (ticketId: number, helpful: boolean) => {
+    try {
+      // Call the API to submit feedback
+      const response = await fetch(`http://127.0.0.1:5000/api/tickets/${ticketId}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          helpful: helpful
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        console.warn('Failed to record feedback:', data.message);
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+    }
+  };
+
   // Effect to sync status changes between canvas and list
   useEffect(() => {
     const updatedTickets = tickets.map(ticket => {
@@ -115,6 +183,8 @@ function App() {
             onTicketDrop={handleTicketDrop}
             onTicketRemove={handleTicketRemove}
             onChatOpen={handleChatOpen}
+            onTicketResolve={handleTicketResolve}
+            onSolutionFeedback={handleSolutionFeedback}
           />
         </div>
 

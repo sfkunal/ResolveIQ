@@ -20,6 +20,11 @@ class KnowledgeBaseManager:
     @property
     def vectorstore(self):
         return self._vectorstore
+    
+    def refresh_vectorstore(self):
+        """Reload the vector store to incorporate newly added resolved tickets"""
+        self._vectorstore = engine.load_knowledge_base()
+        return self._vectorstore
 
 # Initialize the knowledge base when the server starts
 kb_manager = KnowledgeBaseManager()
@@ -39,6 +44,7 @@ def solve_ticket(ticket_id):
         ticket = engine.get_ticket(ticket_id)
         ticket_string = engine.stringify_ticket(ticket)
         ticket_author = ticket['author']
+        
         # Use the singleton vectorstore
         relevant_knowledge = engine.find_relevant_knowledge(
             ticket_string, 
@@ -46,7 +52,7 @@ def solve_ticket(ticket_id):
         )
         
         # Generate response
-        response_content, reference = engine.generate_response(
+        response_content, reference, source_type = engine.generate_response(
             ticket_string,
             relevant_knowledge[0],
             ticket_author
@@ -56,11 +62,64 @@ def solve_ticket(ticket_id):
             "ticket": ticket,
             "response": response_content,
             "reference": reference,  # Include the reference in the response
+            "source_type": source_type,  # Include the source type (knowledge_wiki or resolved_ticket)
             "relevant_knowledge": relevant_knowledge[0][0]
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/tickets/<int:ticket_id>/resolve', methods=['POST'])
+def mark_ticket_resolved(ticket_id):
+    try:
+        data = request.json
+        solution = data.get('solution')
+        resolved_by = data.get('resolved_by')
+        
+        if not solution:
+            return jsonify({"error": "Missing solution for resolved ticket"}), 400
+            
+        # Get the ticket details
+        ticket = engine.get_ticket(ticket_id)
+        if not ticket:
+            return jsonify({"error": f"Ticket {ticket_id} not found"}), 404
+            
+        # Add resolved ticket to the database
+        engine.add_resolved_ticket(ticket, solution, resolved_by or ticket['author'])
+        
+        # Refresh the vector store to include the new resolved ticket
+        kb_manager.refresh_vectorstore()
+        
+        return jsonify({
+            "success": True,
+            "message": f"Ticket {ticket_id} marked as resolved and added to knowledge base"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/tickets/<int:ticket_id>/feedback', methods=['POST'])
+def submit_solution_feedback(ticket_id):
+    try:
+        data = request.json
+        was_helpful = data.get('helpful', False)
+        
+        # Update solution effectiveness
+        updated = engine.update_solution_effectiveness(ticket_id, was_helpful)
+        
+        if updated:
+            # Refresh the vector store to update the effectiveness scores
+            kb_manager.refresh_vectorstore()
+            
+            return jsonify({
+                "success": True,
+                "message": f"Feedback for ticket {ticket_id} recorded successfully"
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "message": f"Ticket {ticket_id} not found in resolved tickets"
+            }), 404
+            
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/chat', methods=['POST'])
@@ -88,7 +147,7 @@ def chat():
         )
         
         # Generate response with chat history and author
-        response_content, reference = engine.generate_response(
+        response_content, reference, source_type = engine.generate_response(
             ticket_string + "\nUser message: " + message,
             relevant_knowledge[0],
             ticket['author'],  # Pass the author
@@ -98,6 +157,7 @@ def chat():
         return jsonify({
             "response": response_content,
             "reference": reference,
+            "source_type": source_type,
             "relevant_knowledge": relevant_knowledge[0][0]
         })
     except Exception as e:
