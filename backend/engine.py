@@ -31,15 +31,15 @@ def load_knowledge_base():
     # Load knowledge wiki
     kb_chunks = load_knowledge_wiki()
     
-    # Load resolved tickets if they exist
+    # load resolved tickets if they exist
     resolved_chunks = load_resolved_tickets()
     
-    # Combine all chunks
+    # combine all chunks
     all_chunks = kb_chunks + resolved_chunks
     texts = [chunk['text'] for chunk in all_chunks]
     metadatas = [chunk['metadata'] for chunk in all_chunks]
     
-    # Create vectorstore from all chunks
+    # create vectorstore from all chunks
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     vectorstore = FAISS.from_texts(
         texts,
@@ -73,7 +73,7 @@ def load_knowledge_wiki():
                 'metadata': {
                     "chunk_id": i,
                     "title": title,
-                    "source": "knowledge_wiki",
+                    "source": "knowledge_wiki",  # either from past ticket or wiki
                     "doc_type": "knowledge_wiki",
                     "date_added": datetime.datetime.now().isoformat()
                 }
@@ -115,7 +115,7 @@ def load_resolved_tickets():
         return result_chunks
     except FileNotFoundError:
         print("No resolved tickets file found yet. Starting with empty resolved tickets.")
-        # Create the file with an empty array
+        # creates a file for resolved tickets and their effectiveness score
         with open('resolved_tickets.json', 'w') as file:
             json.dump([], file)
         return []
@@ -124,18 +124,18 @@ def find_relevant_knowledge(ticket_string, vectorstore, top_k=3, include_resolve
     """Find relevant knowledge for a ticket, with option to prioritize resolved tickets"""
     filters = None
     if not include_resolved:
-        # Only search knowledge wiki if resolved tickets should be excluded
+        # only searches knowledge wiki if resolved tickets should be excluded
         filters = {"doc_type": "knowledge_wiki"}
     
-    # First prioritize searching resolved tickets with high effectiveness 
+    # very buggy atm - prioritizes searching resolved tickets with high effectiveness 
     relevant_chunks = vectorstore.similarity_search(
         ticket_string, 
         k=top_k, 
         filter=filters
     )
     
-    # Sort results to prioritize resolved tickets if they exist
-    # This ensures resolved tickets appear first in the results list
+    # sort results to prioritize resolved tickets if they exist
+    # it basically makes sure resolved tickets appear first in the results list
     sorted_chunks = sorted(
         relevant_chunks, 
         key=lambda doc: 0 if doc.metadata.get('doc_type') == 'resolved_ticket' else 1
@@ -144,14 +144,12 @@ def find_relevant_knowledge(ticket_string, vectorstore, top_k=3, include_resolve
     return [(doc.page_content, doc.metadata) for doc in sorted_chunks]
 
 def add_resolved_ticket(ticket, solution, resolved_by):
-    # Load existing resolved tickets
     try:
         with open('resolved_tickets.json', 'r') as file:
             resolved_tickets = json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
         resolved_tickets = []
     
-    # Create new resolved ticket entry
     new_entry = {
         'ticket_id': ticket['id'],
         'title': ticket['title'],
@@ -163,21 +161,19 @@ def add_resolved_ticket(ticket, solution, resolved_by):
         'feedback_count': 0
     }
     
-    # Check if this ticket has already been resolved before
+    # checks if da curr ticket has alr been resolved before
     for i, existing in enumerate(resolved_tickets):
         if existing['ticket_id'] == ticket['id']:
-            # Update existing entry instead of adding new one
             resolved_tickets[i] = new_entry
             break
     else:
-        # Add new entry if not already present
+        # adds a new entry if it's not alr there
         resolved_tickets.append(new_entry)
     
-    # Save updated resolved tickets
+    # saves the updated resolved tickets
     with open('resolved_tickets.json', 'w') as file:
         json.dump(resolved_tickets, file, indent=2)
     
-    # Return the new entry for vectorization if needed
     return new_entry
 
 def update_solution_effectiveness(ticket_id, was_helpful):
@@ -188,31 +184,30 @@ def update_solution_effectiveness(ticket_id, was_helpful):
     except (FileNotFoundError, json.JSONDecodeError):
         return False
     
-    # Find and update the specific ticket
+    # this whole thing finds and update the specific ticket
     updated = False
     for i, ticket in enumerate(resolved_tickets):
         if ticket['ticket_id'] == ticket_id:
-            # Update effectiveness score using simple weighted average
+            # we needa figure out a better weighted average formula
             current_score = ticket['effectiveness_score']
             current_count = ticket['feedback_count']
             
             new_score = 1.0 if was_helpful else 0.0
             updated_count = current_count + 1
             
-            # Weighted average formula
+            # curr weighted average formula; we should change later
             if current_count == 0:
                 updated_score = new_score
             else:
                 updated_score = ((current_score * current_count) + new_score) / updated_count
             
-            # Update the ticket
+            # update ticket
             resolved_tickets[i]['effectiveness_score'] = updated_score
             resolved_tickets[i]['feedback_count'] = updated_count
             updated = True
             break
     
     if updated:
-        # Save updated tickets
         with open('resolved_tickets.json', 'w') as file:
             json.dump(resolved_tickets, file, indent=2)
     
@@ -483,8 +478,8 @@ Provide a concise step by step solution to the support ticket.""")
     
     response = chat_model.invoke(messages)
     
-    # Determine source type for the UI to display differently
+    # either knowledge_wiki or resolved_ticket
     source_type = metadata.get('doc_type', 'knowledge_wiki')
     
-    # returns content and title of relevant section as well
+    # returns content and title of relevant section
     return response.content, metadata['title'], source_type
