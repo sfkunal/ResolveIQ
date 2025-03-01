@@ -39,6 +39,7 @@ const TicketCard: React.FC<{
   const nodeRef = useRef<HTMLDivElement>(null!);
   const [isEditing, setIsEditing] = useState(false);
   const [editedResponse, setEditedResponse] = useState(ticket.copilotResponse || '');
+  const [showStatusSelector, setShowStatusSelector] = useState(false);
   
   const handleDrag = (_e: DraggableEvent, data: DraggableData) => {
     onPositionChange(data.x, data.y);
@@ -46,6 +47,14 @@ const TicketCard: React.FC<{
 
   const handleResize = (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
     onSizeChange(data.size.width, data.size.height);
+  };
+
+  const handleStatusChange = (newStatus: string) => {
+    onTicketUpdate({
+      ...ticket,
+      status: newStatus
+    });
+    setShowStatusSelector(false);
   };
 
   const cleanReference = (ref: string): string => {
@@ -114,7 +123,47 @@ const TicketCard: React.FC<{
                 </svg>
                 Chat
               </button>
+
+              
             )}
+
+            <button 
+              className="ticket-status-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowStatusSelector(!showStatusSelector);
+              }}
+            >
+              <svg className="status-icon" viewBox="0 0 24 24">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+              </svg>
+              Change Status
+            </button>
+            {showStatusSelector && (
+              <div className="status-selector">
+                <button 
+                  className={`status-option ${ticket.status === 'Open' ? 'active' : ''}`}
+                  onClick={() => handleStatusChange('Open')}
+                >
+                  Open
+                </button>
+                <button 
+                  className={`status-option ${ticket.status === 'In Progress' ? 'active' : ''}`}
+                  onClick={() => handleStatusChange('In Progress')}
+                >
+                  In Progress
+                </button>
+                <button 
+                  className={`status-option ${ticket.status === 'Resolved' ? 'active' : ''}`}
+                  onClick={() => handleStatusChange('Resolved')}
+                >
+                  Resolved
+                </button>
+              </div>
+            )}
+
+
+            
             <div className={`status-badge ${ticket.status.toLowerCase()}`}>
               {ticket.status}
             </div>

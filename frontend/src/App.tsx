@@ -15,6 +15,11 @@ interface Ticket {
   status: string;
   description: string;
   position?: { x: number; y: number };
+  size?: { width: number; height: number };
+  copilotResponse?: string;
+  reference?: string;
+  isLoadingCopilot?: boolean;
+  chatHistory?: { sender: 'user' | 'ai'; content: string }[];
 }
 
 function App() {
@@ -45,9 +50,20 @@ function App() {
   };
 
   const handleTicketUpdate = (updatedTicket: Ticket) => {
+    // Update canvas tickets
     setCanvasTickets(prev =>
       prev.map(ticket =>
         ticket.id === updatedTicket.id ? updatedTicket : ticket
+      )
+    );
+
+    // Also update the main tickets list
+    setTickets(prev =>
+      prev.map(ticket =>
+        ticket.id === updatedTicket.id ? {
+          ...ticket,
+          status: updatedTicket.status // Ensure status is updated in main list
+        } : ticket
       )
     );
   };
@@ -63,6 +79,15 @@ function App() {
   const handleChatOpen = (ticketId: number) => {
     console.log('Opening chat for ticket:', ticketId);
   };
+
+  // Effect to sync status changes between canvas and list
+  useEffect(() => {
+    const updatedTickets = tickets.map(ticket => {
+      const canvasTicket = canvasTickets.find(ct => ct.id === ticket.id);
+      return canvasTicket ? { ...ticket, status: canvasTicket.status } : ticket;
+    });
+    setTickets(updatedTickets);
+  }, [canvasTickets]);
 
   return (
     <div className="App">
