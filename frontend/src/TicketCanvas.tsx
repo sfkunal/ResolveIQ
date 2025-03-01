@@ -34,8 +34,11 @@ const TicketCard: React.FC<{
   onRemove: (ticketId: number) => void;
   onCopilot: (ticketId: number) => void;
   onChatOpen: (ticketId: number) => void;
-}> = ({ ticket, onPositionChange, onSizeChange, onRemove, onCopilot, onChatOpen }) => {
+  onTicketUpdate: (updatedTicket: Ticket) => void;
+}> = ({ ticket, onPositionChange, onSizeChange, onRemove, onCopilot, onChatOpen, onTicketUpdate }) => {
   const nodeRef = useRef<HTMLDivElement>(null!);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedResponse, setEditedResponse] = useState(ticket.copilotResponse || '');
   
   const handleDrag = (_e: DraggableEvent, data: DraggableData) => {
     onPositionChange(data.x, data.y);
@@ -45,7 +48,6 @@ const TicketCard: React.FC<{
     onSizeChange(data.size.width, data.size.height);
   };
 
-  // remove the markdown asterisks for references bruh
   const cleanReference = (ref: string): string => {
     return ref.replace(/\*\*/g, '').trim();
   };
@@ -134,7 +136,49 @@ const TicketCard: React.FC<{
                 </div>
               ) : (
                 <>
-                  <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
+                  {!isEditing ? (
+                    <>
+                      <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
+                      <button 
+                        className="edit-response-btn"
+                        onClick={() => {
+                          setIsEditing(true);
+                          setEditedResponse(ticket.copilotResponse || '');
+                        }}
+                      >
+                        Edit Response
+                      </button>
+                    </>
+                  ) : (
+                    <div className="response-editor">
+                      <textarea
+                        value={editedResponse}
+                        onChange={(e) => setEditedResponse(e.target.value)}
+                        className="response-textarea"
+                      />
+                      <div className="editor-buttons">
+                        <button
+                          onClick={() => {
+                            onTicketUpdate({
+                              ...ticket,
+                              copilotResponse: editedResponse
+                            });
+                            setIsEditing(false);
+                          }}
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsEditing(false);
+                            setEditedResponse(ticket.copilotResponse || '');
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   {ticket.reference && (
                     <div className="copilot-reference">
                       <h4 className="reference-title">Knowledge Wiki References</h4>
@@ -194,7 +238,6 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
     });
 
     try {
-      // Remove the -1, just use the actual ticketId
       const response = await fetch(`http://127.0.0.1:5000/api/tickets/${ticketId}/solve`, {
         method: 'POST',
       });
@@ -215,8 +258,7 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
         copilotResponse: 'Error: Failed to get Copilot response'
       });
     }
-};
-
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -263,11 +305,11 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
   };
 
   const handleZoomIn = () => {
-    setScale(prev => Math.min(prev + 0.1, 2)); // Max zoom: 2x
+    setScale(prev => Math.min(prev + 0.1, 2));
   };
 
   const handleZoomOut = () => {
-    setScale(prev => Math.max(prev - 0.1, 0.5)); // Min zoom: 0.5x
+    setScale(prev => Math.max(prev - 0.1, 0.5));
   };
 
   return (
@@ -313,6 +355,7 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
             onRemove={onTicketRemove}
             onCopilot={handleCopilot}
             onChatOpen={handleChatOpen}
+            onTicketUpdate={onTicketUpdate}
           />
         ))}
       </div>
