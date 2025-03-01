@@ -1,1 +1,22 @@
-[]
+[
+  {
+    "ticket_id": 1,
+    "title": "Auto Assignment Not Working",
+    "problem": "I haven't received any auto assignments for the past 2 hours. I've checked my status and I'm set as 'Available'. My queue is empty but I know there are cases in the general pool. Please help troubleshoot why I'm not getting assignments.",
+    "solution": "**Concise Step-by-Step Solution:**\n\n1. **Verify System Status**: Check if there are any ongoing outages or maintenance in the assignment system.\n2. **Check Queue Configuration**: Ensure that your queue is properly configured and there are no conflicting filters that might be causing the issue. \n3. **Toggle Availability**: Toggle John Smith's availability from \"Available\" to \"Not Available\". \n4. **Manually Refresh Status**: Once John toggles his availability, manually refresh John's status again in the system to see if a new assignment is generated.\n\n**Action Plan:**\n\n1. By verifying the system status and checking the queue configuration, we should be able to identify the cause of the issue.\n2. The toggle of John's availability will help reset the auto-assignment process and generate a new assignment for him.\n3. After toggling availability and manually refreshing John's status, he should receive a new assignment if the issue is resolved.\n\n**Employee Attribute Impact:**\n\n* By toggling John's availability from \"Available\" to \"Not Available\", we are helping to reset the auto-assignment process and generate a new assignment for him.\n* The system will consider his updated availability when generating assignments in the future, ensuring that similar issues are not encountered.",
+    "resolved_by": "John Smith",
+    "resolved_at": "2025-03-01T02:45:29.748904",
+    "effectiveness_score": 1.0,
+    "feedback_count": 0
+  },
+  {
+    "ticket_id": 4,
+    "title": "Webcam Problems",
+    "problem": "My webcam stopped working when I talk to customers. I need help",
+    "solution": "If someone is having webcam problems, you can help them. Tell them that the problem can be fixed if they uninstall and reinstall the webcam software. This fixes the customer problem",
+    "resolved_by": "Max Mueller",
+    "resolved_at": "2025-03-01T02:46:47.561217",
+    "effectiveness_score": 1.0,
+    "feedback_count": 0
+  }
+]
