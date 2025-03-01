@@ -439,7 +439,7 @@
 
 .ticket-copilot-btn {
   position: absolute;
-  top: -10px;
+  top: -30px;
   left: -10px;
   padding: 6px 12px;
   border-radius: 20px;
@@ -555,7 +555,7 @@
 /* Chat button */
 .ticket-chat-btn {
   position: absolute;
-  top: -10px;
+  top: -30px;
   left: 120px; /* Position after copilot button */
   padding: 6px 12px;
   border-radius: 20px;
@@ -1076,8 +1076,8 @@
 /* Status button - update to match other buttons */
 .ticket-status-btn {
   position: absolute;
-  top: -10px;
-  left: 230px;
+  top: -30px;
+  left: 187px;
   padding: 6px 12px;
   border-radius: 20px;
   background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
@@ -1116,8 +1116,8 @@
 /* Status selector dropdown */
 .status-selector {
   position: absolute;
-  top: 30px;
-  left: 230px;
+  top: 10px;
+  left: 187px;
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
