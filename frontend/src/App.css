@@ -902,7 +902,7 @@
   opacity: 0.8;
 }
 
-/* Adjust padding to make room for the drag indicator */
+
 .ticket-item .status-badge,
 .ticket-item .ticket-title,
 .ticket-item .ticket-meta {
@@ -1073,7 +1073,6 @@
 }
 
 
-/* Status button - update to match other buttons */
 .ticket-status-btn {
   position: absolute;
   top: -30px;
@@ -1093,10 +1092,9 @@
   opacity: 0;
   transform: translateY(10px);
   transition: all 0.2s ease-out;
-  white-space: nowrap; /* Add this to prevent wrapping */
+  white-space: nowrap; 
 }
 
-/* Show status button only on hover, like other buttons */
 .canvas-ticket:hover .ticket-status-btn {
   opacity: 1;
   transform: translateY(0);
@@ -1113,7 +1111,6 @@
   fill: currentColor;
 }
 
-/* Status selector dropdown */
 .status-selector {
   position: absolute;
   top: 10px;
