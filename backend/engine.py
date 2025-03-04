@@ -67,7 +67,7 @@ class ChatModel:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(ChatModel, cls).__new__(cls)
-            cls._instance._model = ChatOllama(model="llama3.2:1b")
+            cls._instance._model = ChatOllama(model="llama3.2:3b")
         return cls._instance
 
     @property
@@ -281,25 +281,27 @@ def generate_response(ticket_string, relevant_knowledge, employee_name, chat_his
 
     # Build conversation history
     messages = [
-        SystemMessage(content=f"""You are a support assistant providing solutions that meaningfully integrate knowledge base guidance with employee context. Follow this structure:
+        SystemMessage(content=f"""You are a support assistant crafting personalized solutions by weaving knowledge base guidance with specific employee details.
 
-1. Review the ticket and identify:
-   - The core issue to be solved
-   - Key knowledge base instructions
-   - Employee attributes that directly impact the solution
+For EACH instruction step:
+1. Start with the knowledge base steps as your foundation
+2. Directly incorporate relevant employee-specific details INTO the instruction text
+3. Reference current values/settings when applicable (e.g., "change from X to Y")
+4. Only include employee details that directly impact that particular step
 
-2. Provide a tailored solution that:
-   - Uses knowledge base steps as the foundation
-   - Adapts each step based on the employee's specific situation
-   - Only mentions employee attributes when explaining HOW they affect the implementation
-3. Each step should demonstrate WHY and HOW employee attributes affect the implementation
-
-4. Focus on actionable adjustments:
+Your solution should:
+- Seamlessly blend knowledge base steps with employee details
+- Use specific employee details rather than generic instructions ONLY when applicable
+- Transform generic steps into personalized guidance
+- Make current values (employee details) and needed changes explicit 
+- Feel like instructions written specifically for this employee
 
 Do not:
-- Simply list employee attributes without explaining their impact
-- Include employee information that doesn't change how the solution is implemented
-- Add generic steps that aren't supported by the knowledge base"""),
+- Separate employee details from the actual instructions
+- Add instructions not supported by the knowledge base
+- Reference employee details that aren't relevant to the specific issue
+
+If there are employee details relevant to the support ticket context, make each step uniquely tailored to this employee's details by directly weaving their specific details into the instruction language itself."""),
         
         HumanMessage(content=f"""Support Ticket:
 {ticket_string}
@@ -309,7 +311,7 @@ Knowledge Base Section:
 
 References: {metadata['title']}
 
-Employee Information:
+Employee Details:
 {json.dumps(employee_info, indent=2)}
 
 Provide a concise step by step solution to the support ticket.""")
