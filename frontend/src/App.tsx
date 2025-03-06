@@ -27,6 +27,7 @@ function App() {
   const [tickets, setTickets] = useState<Ticket[]>(ticketData.tickets);
   const [canvasTickets, setCanvasTickets] = useState<Ticket[]>([]);
   const [activeTab, setActiveTab] = useState<'wiki' | 'databases'>('wiki');
+  const [activeReference, setActiveReference] = useState<string | undefined>(undefined);
 
   // Handle reordering of tickets in the list
   const handleTicketsReorder = (reorderedTickets: Ticket[]) => {
@@ -66,6 +67,12 @@ function App() {
         } : ticket
       )
     );
+
+    // If the ticket has a reference, set it as active and switch to wiki tab
+    if (updatedTicket.reference && !updatedTicket.isLoadingCopilot) {
+      setActiveReference(updatedTicket.reference);
+      setActiveTab('wiki');
+    }
   };
 
   const handleTicketDrop = (ticket: Ticket, x: number, y: number) => {
@@ -134,7 +141,7 @@ function App() {
             </button>
           </div>
           <div className="tab-content">
-            {activeTab === 'wiki' ? <KnowledgeWiki /> : <Databases />}
+            {activeTab === 'wiki' ? <KnowledgeWiki activeReference={activeReference} /> : <Databases />}
           </div>
         </div>
       </div>

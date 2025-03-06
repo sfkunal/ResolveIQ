@@ -299,6 +299,8 @@
   flex: 1;
   overflow-y: auto;
   padding-right: 16px;
+  scroll-padding-top: 20px;
+  scroll-behavior: smooth;
 }
 
 .wiki-content h3 {
@@ -1147,4 +1149,20 @@
 
 .status-option:not(:last-child) {
   border-bottom: 1px solid #eee;
+}
+
+/* Highlighted section in Knowledge Wiki */
+.highlighted-section {
+  background-color: rgba(255, 236, 179, 0.5);
+  border-left: 4px solid #ffc107;
+  padding-left: 12px !important;
+  margin-left: -16px !important;
+  transition: background-color 0.3s ease;
+  animation: highlight-pulse 2s ease-in-out 1;
+}
+
+@keyframes highlight-pulse {
+  0% { background-color: rgba(255, 236, 179, 0.2); }
+  50% { background-color: rgba(255, 236, 179, 0.8); }
+  100% { background-color: rgba(255, 236, 179, 0.5); }
 }
