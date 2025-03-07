@@ -7,6 +7,11 @@ import markdown
 from langchain_community.chat_models import ChatOllama
 from langchain_core.messages import HumanMessage, SystemMessage
 import sqlite3
+import psycopg2
+from dotenv import load_dotenv
+import os
+from psycopg2.extras import RealDictCursor
+
 
 def get_tickets():
     with open('support_tickets.json', 'r') as file:
@@ -76,206 +81,59 @@ class ChatModel:
     
 class EmployeeDatabase:
 
-    def __init__(self, db_path="employee_support.db"):
-        self.db_path = db_path
-        self.setup_database()
-        self.populate_table()
+    def __init__(self):
+        self._init_connection_params()
+    
+    def _init_connection_params(self):
+        # Get connection parameters from environment variables
+        load_dotenv()
 
-    def get_connection(self):
-        return sqlite3.connect(self.db_path)
-    
-    def setup_database(self):
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("DROP TABLE IF EXISTS employees")
-            cursor.execute("""
-                           CREATE TABLE IF NOT EXISTS employees (
-                            alias TEXT PRIMARY KEY,
-                            timezone TEXT,
-                            country TEXT,
-                            support_region TEXT,
-                            skills TEXT,
-                            line_of_business TEXT,
-                            manager TEXT,
-                            email TEXT,
-                            language TEXT,
-                            status TEXT,
-                            product TEXT,
-                            name TEXT)
-                           """)
-            conn.commit()
-    
-    def populate_table(self):
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            sample_employees = [
-                {
-                    "alias": "jsmith",
-                    "timezone": "EST",
-                    "country": "United States",
-                    "support_region": "Americas",
-                    "skills": json.dumps(["Troubleshooting", "Technical Writing", "Cloud Infrastructure"]),
-                    "line_of_business": "Enterprise",
-                    "manager": "mwilson",
-                    "email": "john.smith@company.com",
-                    "language": json.dumps(["English", "Spanish"]),
-                    "status": "Active",
-                    "product": "Cloud Platform",
-                    "name": "John Smith"
-                },
-                {
-                    "alias": "agarcia",
-                    "timezone": "PST",
-                    "country": "United States",
-                    "support_region": "Americas",
-                    "skills": json.dumps(["Database Management", "Performance Tuning", "Security"]),
-                    "line_of_business": "SMB",
-                    "manager": "mwilson",
-                    "email": "ana.garcia@company.com",
-                    "language": json.dumps(["English", "Spanish", "Portuguese"]),
-                    "status": "Active",
-                    "product": "Database Solutions",
-                    "name": "Ana Garcia"
-                },
-                {
-                    "alias": "tkumar",
-                    "timezone": "IST",
-                    "country": "India",
-                    "support_region": "APAC",
-                    "skills": json.dumps(["API Integration", "Mobile Development", "Backend Systems"]),
-                    "line_of_business": "Enterprise",
-                    "manager": "rpatel",
-                    "email": "tej.kumar@company.com",
-                    "language": json.dumps(["English", "Hindi", "Telugu"]),
-                    "status": "Active",
-                    "product": "API Gateway",
-                    "name": "Tej Kumar"
-                },
-                {
-                    "alias": "lwang",
-                    "timezone": "CST",
-                    "country": "China",
-                    "support_region": "APAC",
-                    "skills": json.dumps(["Machine Learning", "Data Analytics", "Cloud Architecture"]),
-                    "line_of_business": "Enterprise",
-                    "manager": "yzhan",
-                    "email": "li.wang@company.com",
-                    "language": json.dumps(["English", "Mandarin", "Cantonese"]),
-                    "status": "Active",
-                    "product": "ML Platform",
-                    "name": "Li Wang"
-                },
-                {
-                    "alias": "mmueller",
-                    "timezone": "CET",
-                    "country": "Germany",
-                    "support_region": "EMEA",
-                    "skills": json.dumps(["Security", "Compliance", "Network Infrastructure"]),
-                    "line_of_business": "Enterprise",
-                    "manager": "kschmidt",
-                    "email": "max.mueller@company.com",
-                    "language": json.dumps(["English", "German", "French"]),
-                    "status": "Active",
-                    "product": "Security Suite",
-                    "name": "Max Mueller"
-                },
-                {
-                    "alias": "slee",
-                    "timezone": "KST",
-                    "country": "South Korea",
-                    "support_region": "APAC",
-                    "skills": json.dumps(["Mobile Development", "Frontend Development", "UX Design"]),
-                    "line_of_business": "SMB",
-                    "manager": "jkim",
-                    "email": "sun.lee@company.com",
-                    "language": json.dumps(["English", "Korean", "Japanese"]),
-                    "status": "Training",
-                    "product": "Mobile SDK",
-                    "name": "Sun Lee"
-                },
-                {
-                    "alias": "olivia",
-                    "timezone": "GMT",
-                    "country": "United Kingdom",
-                    "support_region": "EMEA",
-                    "skills": json.dumps(["Product Management", "Technical Support", "Customer Success"]),
-                    "line_of_business": "Enterprise",
-                    "manager": "robert",
-                    "email": "olivia.brown@company.com",
-                    "language": json.dumps(["English", "French"]),
-                    "status": "Active",
-                    "product": "Enterprise Suite",
-                    "name": "Olivia Brown"
-                },
-                {
-                    "alias": "rpatel",
-                    "timezone": "IST",
-                    "country": "India",
-                    "support_region": "APAC",
-                    "skills": json.dumps(["Team Leadership", "Strategy", "Technical Architecture"]),
-                    "line_of_business": "Enterprise",
-                    "manager": "sarah",
-                    "email": "raj.patel@company.com",
-                    "language": json.dumps(["English", "Hindi", "Gujarati"]),
-                    "status": "Active",
-                    "product": "All Products",
-                    "name": "Raj Patel"
-                }
-            ]
-            cursor.executemany("""
-                               INSERT INTO employees (alias, timezone, country, support_region, skills, line_of_business, manager, email, language, status, product, name)
-                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                               """, [(emp["alias"], emp["timezone"], emp["country"], emp["support_region"],
-                                    emp["skills"], emp["line_of_business"], emp["manager"], emp["email"],
-                                    emp["language"], emp["status"], emp["product"], emp["name"]) 
-                                    for emp in sample_employees])
-            conn.commit()
-            
-    
-    def is_table_empty(self):
-        with self.get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM employees")
-            count = cursor.fetchone()[0]
-            return count == 0
+        self.db_host = os.getenv("POSTGRES_HOST")
+        self.db_name = os.getenv("POSTGRES_DB")
+        self.db_user = os.getenv("POSTGRES_USER")
+        self.db_password = os.getenv("POSTGRES_PASSWORD")
+        self.db_port = os.getenv("POSTGRES_PORT", "5432")
         
-    def execute_query(self, query):
+        # Check if all required environment variables are set
+        required_vars = ["POSTGRES_HOST", "POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD"]
+        missing_vars = [var for var in required_vars if not os.getenv(var)]
+        
+        if missing_vars:
+            raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+    
+    def get_connection(self):
+        """Create and return a connection to the PostgreSQL database"""
+        return psycopg2.connect(
+            host=self.db_host,
+            database=self.db_name,
+            user=self.db_user,
+            password=self.db_password,
+            port=self.db_port
+        )
+    
+    def execute_query(self, query, params=None):
+        """Execute a SQL query and return the results"""
         with self.get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(query)
-            output = cursor.fetchall()
-            return output
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute(query, params or ())
+                return cursor.fetchall()
 
 def generate_response(ticket_string, relevant_knowledge, employee_name, chat_history=None):
     chat_model = ChatModel().model
     db = EmployeeDatabase()
 
-    sql_query = f"""
+    sql_query = """
     SELECT timezone, country, support_region, skills, line_of_business, manager, email, language, status, product, name 
     FROM employees 
-    WHERE name = ?"""
+    WHERE name = %s"""
 
-    with db.get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(sql_query, (employee_name,))
-        employee_data = cursor.fetchone()
+    employee_data = db.execute_query(sql_query, (employee_name,))
     
     employee_info = {"No employee information found"}  # Default in case of no data
     
-    if employee_data:
-        employee_info = {
-            "timezone": employee_data[0],
-            "country": employee_data[1],
-            "support_region": employee_data[2],
-            "skills": json.loads(employee_data[3]),
-            "line_of_business": employee_data[4],
-            "manager": employee_data[5],
-            "email": employee_data[6],
-            "language": json.loads(employee_data[7]),
-            "status": employee_data[8],
-            "product": employee_data[9],
-            "name": employee_data[10]
-        }
+    if employee_data and len(employee_data) > 0:
+        # With RealDictCursor, we get a dict-like object
+        employee_info = employee_data[0]
     
     content, metadata = relevant_knowledge  # Unpack content and metadata from relevant_knowledge
 
