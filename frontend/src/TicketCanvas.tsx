@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
-import { ResizableBox, ResizeCallbackData } from 'react-resizable';
 import ChatPanel from './ChatPanel.tsx';
 import ReactMarkdown from 'react-markdown';
 
@@ -12,7 +11,7 @@ interface Ticket {
   status: string;
   description: string;
   position?: { x: number; y: number };
-  size?: { width: number; height: number };
+  isFullscreen?: boolean;
   copilotResponse?: string;
   reference?: string;
   isLoadingCopilot?: boolean;
@@ -27,15 +26,233 @@ interface TicketCanvasProps {
   onChatOpen: (ticketId: number) => void;
 }
 
-const TicketCard: React.FC<{
+// Fullscreen Ticket Modal Component
+const FullscreenTicket: React.FC<{
   ticket: Ticket;
-  onPositionChange: (x: number, y: number) => void;
-  onSizeChange: (width: number, height: number) => void;
+  onClose: () => void;
   onRemove: (ticketId: number) => void;
   onCopilot: (ticketId: number) => void;
   onChatOpen: (ticketId: number) => void;
   onTicketUpdate: (updatedTicket: Ticket) => void;
-}> = ({ ticket, onPositionChange, onSizeChange, onRemove, onCopilot, onChatOpen, onTicketUpdate }) => {
+}> = ({ ticket, onClose, onRemove, onCopilot, onChatOpen, onTicketUpdate }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedResponse, setEditedResponse] = useState(ticket.copilotResponse || '');
+  const [showStatusSelector, setShowStatusSelector] = useState(false);
+  
+  const handleStatusChange = (newStatus: string) => {
+    onTicketUpdate({
+      ...ticket,
+      status: newStatus
+    });
+  };
+  
+  const cleanReference = (ref: string): string => {
+    return ref.replace(/\*\*/g, '').trim();
+  };
+  
+  // Prevent clicks inside the modal from propagating to the overlay
+  const handleModalClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+  
+  return (
+    <div className="fullscreen-overlay" onClick={onClose}>
+      <div className="fullscreen-modal" onClick={handleModalClick}>
+        <div className="fullscreen-header">
+          <button 
+            className="fullscreen-close-btn"
+            onClick={onClose}
+            title="Exit fullscreen"
+          >
+            <span role="img" aria-label="exit fullscreen">⤓</span>
+            Exit Fullscreen
+          </button>
+          
+          <div className="fullscreen-title-section">
+            <div className="title-content">
+              <div className={`status-badge ${ticket.status.toLowerCase()}`}>
+                {ticket.status}
+              </div>
+              <h2>{ticket.title}</h2>
+            </div>
+          </div>
+        </div>
+        
+        {/* Action Bar with Conditional Buttons - Moved outside header for better visibility */}
+        <div className="fullscreen-action-bar">
+          <div className="status-control">
+            <button 
+              className="ticket-status-btn"
+              onClick={() => setShowStatusSelector(!showStatusSelector)}
+              title="Change status"
+              style={{ backgroundColor: '#3B82F6', color: 'white', padding: '10px 20px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}
+            >
+              <svg className="status-icon" viewBox="0 0 24 24" width="20" height="20">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+              </svg>
+              Status
+            </button>
+            {showStatusSelector && (
+              <div className="status-selector">
+                <button 
+                  className={`status-option ${ticket.status === 'Open' ? 'active' : ''}`}
+                  onClick={() => handleStatusChange('Open')}
+                >
+                  Open
+                </button>
+                <button 
+                  className={`status-option ${ticket.status === 'In Progress' ? 'active' : ''}`}
+                  onClick={() => handleStatusChange('In Progress')}
+                >
+                  In Progress
+                </button>
+                <button 
+                  className={`status-option ${ticket.status === 'Resolved' ? 'active' : ''}`}
+                  onClick={() => handleStatusChange('Resolved')}
+                >
+                  Resolved
+                </button>
+              </div>
+            )}
+          </div>
+          
+          {/* Conditionally show Copilot button if no response exists */}
+          {!ticket.copilotResponse && (
+            <button 
+              className="ticket-copilot-btn"
+              onClick={() => onCopilot(ticket.id)}
+              disabled={ticket.isLoadingCopilot}
+              title="Activate Copilot"
+              style={{ backgroundColor: '#6366f1', color: 'white', padding: '10px 20px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}
+            >
+              {ticket.isLoadingCopilot ? (
+                <>
+                  <div className="spinner" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <svg className="copilot-icon" viewBox="0 0 24 24" width="20" height="20">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+                  </svg>
+                  Activate Copilot
+                </>
+              )}
+            </button>
+          )}
+          
+          {/* Conditionally show Chat button if response exists */}
+          {ticket.copilotResponse && (
+            <button 
+              className="ticket-chat-btn"
+              onClick={() => onChatOpen(ticket.id)}
+              title="Open chat"
+              style={{ backgroundColor: '#10B981', color: 'white', padding: '10px 20px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}
+            >
+              <svg className="chat-icon" viewBox="0 0 24 24" width="20" height="20">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+              </svg>
+              Chat
+            </button>
+          )}
+        </div>
+        
+        <div className="fullscreen-content">
+          <div className="ticket-info-section">
+            <h3>Description</h3>
+            <p>{ticket.description}</p>
+            <div className="ticket-meta">
+              <span>Created by: {ticket.author}</span>
+              <span>Date: {new Date(ticket.time).toLocaleDateString()}</span>
+            </div>
+          </div>
+          
+          {(ticket.copilotResponse || ticket.isLoadingCopilot) && (
+            <div className="copilot-section">
+              <h3>Copilot Response</h3>
+              {ticket.isLoadingCopilot ? (
+                <div className="loading-container">
+                  <div className="spinner" />
+                  <span>Getting Copilot response...</span>
+                </div>
+              ) : (
+                <>
+                  {!isEditing ? (
+                    <div className="response-content">
+                      <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
+                      <button 
+                        className="edit-response-btn"
+                        onClick={() => {
+                          setIsEditing(true);
+                          setEditedResponse(ticket.copilotResponse || '');
+                        }}
+                      >
+                        Edit Response
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="response-editor">
+                      <textarea
+                        value={editedResponse}
+                        onChange={(e) => setEditedResponse(e.target.value)}
+                        className="response-textarea"
+                        placeholder="Edit copilot response"
+                        aria-label="Edit copilot response"
+                      />
+                      <div className="editor-buttons">
+                        <button
+                          onClick={() => {
+                            onTicketUpdate({
+                              ...ticket,
+                              copilotResponse: editedResponse
+                            });
+                            setIsEditing(false);
+                          }}
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsEditing(false);
+                            setEditedResponse(ticket.copilotResponse || '');
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+          
+          {ticket.reference && (
+            <div className="references-section">
+              <h3>Knowledge Wiki References</h3>
+              <div className="reference-list">
+                {ticket.reference.split(',').map((ref, index) => (
+                  <div key={index} className="reference-item">
+                    <span className="reference-bullet">-</span> {cleanReference(ref)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TicketCard: React.FC<{
+  ticket: Ticket;
+  onPositionChange: (x: number, y: number) => void;
+  onRemove: (ticketId: number) => void;
+  onCopilot: (ticketId: number) => void;
+  onChatOpen: (ticketId: number) => void;
+  onTicketUpdate: (updatedTicket: Ticket) => void;
+}> = ({ ticket, onPositionChange, onRemove, onCopilot, onChatOpen, onTicketUpdate }) => {
   const nodeRef = useRef<HTMLDivElement>(null!);
   const ticketRef = useRef<HTMLDivElement>(null!);
   const [isEditing, setIsEditing] = useState(false);
@@ -47,14 +264,18 @@ const TicketCard: React.FC<{
     onPositionChange(data.x, data.y);
   };
 
-  const handleResize = (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
-    onSizeChange(data.size.width, data.size.height);
-  };
-
   const handleStatusChange = (newStatus: string) => {
     onTicketUpdate({
       ...ticket,
       status: newStatus
+    });
+  };
+
+  const toggleFullscreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onTicketUpdate({
+      ...ticket,
+      isFullscreen: !ticket.isFullscreen
     });
   };
 
@@ -70,15 +291,7 @@ const TicketCard: React.FC<{
       bounds="parent"
       handle=".drag-handle"
     >
-      <div ref={nodeRef} style={{ position: 'absolute', width: 'auto', height: 'auto' }}>
-        <ResizableBox
-          width={ticket.size?.width || 300}
-          height={ticket.size?.height || 200}
-          onResizeStop={handleResize}
-          minConstraints={[200, 150]}
-          maxConstraints={[500, 400]}
-          resizeHandles={['se']}
-        >
+      <div ref={nodeRef} style={{ position: 'absolute', width: 300, height: 'auto' }}>
           <div 
             className="canvas-ticket drag-handle"
             ref={ticketRef}
@@ -96,6 +309,7 @@ const TicketCard: React.FC<{
                     e.stopPropagation();
                     onRemove(ticket.id);
                   }}
+                  title="Remove ticket"
                 >
                   ×
                 </button>
@@ -106,6 +320,7 @@ const TicketCard: React.FC<{
                     onCopilot(ticket.id);
                   }}
                   disabled={ticket.isLoadingCopilot}
+                  title="Activate Copilot"
                 >
                   {ticket.isLoadingCopilot ? (
                     <>
@@ -114,7 +329,7 @@ const TicketCard: React.FC<{
                     </>
                   ) : (
                     <>
-                      <svg className="copilot-icon" viewBox="0 0 24 24">
+                      <svg className="copilot-icon" viewBox="0 0 24 24" width="20" height="20">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
                       </svg>
                       Activate Copilot
@@ -128,8 +343,9 @@ const TicketCard: React.FC<{
                       e.stopPropagation();
                       onChatOpen(ticket.id);
                     }}
+                    title="Open chat"
                   >
-                    <svg className="chat-icon" viewBox="0 0 24 24">
+                    <svg className="chat-icon" viewBox="0 0 24 24" width="20" height="20">
                       <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
                     </svg>
                     Chat
@@ -144,6 +360,7 @@ const TicketCard: React.FC<{
                       setShowStatusSelector(!showStatusSelector);
                     }}
                     onMouseEnter={() => setShowStatusSelector(true)}
+                    title="Change status"
                   >
                     <svg className="status-icon" viewBox="0 0 24 24">
                       <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
@@ -155,18 +372,21 @@ const TicketCard: React.FC<{
                       <button 
                         className={`status-option ${ticket.status === 'Open' ? 'active' : ''}`}
                         onClick={() => handleStatusChange('Open')}
+                        title="Set status to Open"
                       >
                         Open
                       </button>
                       <button 
                         className={`status-option ${ticket.status === 'In Progress' ? 'active' : ''}`}
                         onClick={() => handleStatusChange('In Progress')}
+                        title="Set status to In Progress"
                       >
                         In Progress
                       </button>
                       <button 
                         className={`status-option ${ticket.status === 'Resolved' ? 'active' : ''}`}
                         onClick={() => handleStatusChange('Resolved')}
+                        title="Set status to Resolved"
                       >
                         Resolved
                       </button>
@@ -187,6 +407,14 @@ const TicketCard: React.FC<{
                 <span>{new Date(ticket.time).toLocaleDateString()}</span>
               </div>
             </div>
+            
+            <button 
+              className="fullscreen-toggle-btn"
+              onClick={toggleFullscreen}
+              title="View in fullscreen"
+            >
+              <span role="img" aria-label="fullscreen">⤢</span>
+            </button>
           </div>
           {(ticket.copilotResponse || ticket.isLoadingCopilot) && (
             <div className="copilot-response">
@@ -216,6 +444,8 @@ const TicketCard: React.FC<{
                         value={editedResponse}
                         onChange={(e) => setEditedResponse(e.target.value)}
                         className="response-textarea"
+                        placeholder="Edit copilot response"
+                        aria-label="Edit copilot response"
                       />
                       <div className="editor-buttons">
                         <button
@@ -256,7 +486,6 @@ const TicketCard: React.FC<{
               )}
             </div>
           )}
-        </ResizableBox>
       </div>
     </Draggable>
   );
@@ -277,13 +506,6 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
     onTicketUpdate({
       ...ticket,
       position: { x, y }
-    });
-  };
-
-  const handleSizeChange = (ticket: Ticket, width: number, height: number) => {
-    onTicketUpdate({
-      ...ticket,
-      size: { width, height }
     });
   };
 
@@ -372,6 +594,19 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
   const handleZoomOut = () => {
     setScale(prev => Math.max(prev - 0.1, 0.5));
   };
+  
+  const handleFullscreenClose = (ticketId: number) => {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+    
+    onTicketUpdate({
+      ...ticket,
+      isFullscreen: false
+    });
+  };
+
+  // Find any ticket that's in fullscreen mode
+  const fullscreenTicket = tickets.find(ticket => ticket.isFullscreen);
 
   return (
     <div className="canvas-container">
@@ -412,7 +647,6 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
             key={ticket.id}
             ticket={ticket}
             onPositionChange={(x, y) => handlePositionChange(ticket, x, y)}
-            onSizeChange={(width, height) => handleSizeChange(ticket, width, height)}
             onRemove={onTicketRemove}
             onCopilot={handleCopilot}
             onChatOpen={handleChatOpen}
@@ -420,6 +654,20 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
           />
         ))}
       </div>
+      
+      {/* Fullscreen Ticket Modal */}
+      {fullscreenTicket && (
+        <FullscreenTicket
+          ticket={fullscreenTicket}
+          onClose={() => handleFullscreenClose(fullscreenTicket.id)}
+          onRemove={onTicketRemove}
+          onCopilot={handleCopilot}
+          onChatOpen={handleChatOpen}
+          onTicketUpdate={onTicketUpdate}
+        />
+      )}
+      
+      {/* Chat Panel */}
       {activeChatTicketId && (
         <ChatPanel
           ticketId={activeChatTicketId}
