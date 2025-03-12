@@ -39,6 +39,126 @@
             "time": "2025-02-06T12:15:00Z",
             "status": "Open",
             "description": "Having two critical issues: 1) My microphone isn't working in the support portal, though it works fine in other applications. 2) I'm not receiving any auto-assigned tickets despite being available for the last hour. My status is set to 'Available' but my queue remains empty even though there are tickets in the general pool. Both issues are severely impacting my ability to handle support cases."
+        },
+        {
+            "id": 6,
+            "title": "Dashboard Not Loading",
+            "author": "John Smith",
+            "time": "2025-02-06T13:45:00Z",
+            "status": "Open",
+            "description": "My support dashboard is stuck on a loading screen and doesn't display any of my active cases. I've tried clearing my cache, switching browsers, and even using an incognito window, but the issue persists. I need assistance as I cannot track ongoing customer issues."
+        },
+        {
+            "id": 7,
+            "title": "Case Reassignment Request",
+            "author": "Ana Garcia",
+            "time": "2025-02-06T14:10:00Z",
+            "status": "In Progress",
+            "description": "I was assigned a case that involves advanced API debugging, which is beyond my expertise. I’ve attempted some initial troubleshooting, but I believe this would be better handled by an engineer with API experience. Can this case be reassigned to the appropriate team?"
+        },
+        {
+            "id": 8,
+            "title": "Delayed Case Notifications",
+            "author": "Tej Kumar",
+            "time": "2025-02-06T15:05:00Z",
+            "status": "Open",
+            "description": "I'm experiencing a significant delay in case notifications. When new cases are assigned, I don't receive the notification for 10-15 minutes. This has led to longer response times, which negatively impacts our SLA. Please investigate and resolve this issue."
+        },
+        {
+            "id": 9,
+            "title": "Support Portal Freezing Intermittently",
+            "author": "Max Mueller",
+            "time": "2025-02-06T16:20:00Z",
+            "status": "Open",
+            "description": "The support portal keeps freezing at random intervals, requiring me to refresh the page frequently. It happens particularly when switching between cases or updating notes. This is severely slowing down my workflow. Is this a known issue?"
+        },
+        {
+            "id": 10,
+            "title": "Request for Elevated Access",
+            "author": "Olivia Brown",
+            "time": "2025-02-06T17:00:00Z",
+            "status": "Open",
+            "description": "I need additional access permissions to view full customer account histories for troubleshooting. Currently, I get an 'Access Denied' error when attempting to retrieve past interactions. Please grant me the necessary permissions or direct me to the right process to request them."
+        },
+        {
+            "id": 11,
+            "title": "Case Resolution Button Missing",
+            "author": "John Smith",
+            "time": "2025-02-06T18:15:00Z",
+            "status": "Open",
+            "description": "I'm unable to mark cases as resolved because the 'Resolve Case' button has disappeared from my interface. This issue started occurring after the latest system update. Without this functionality, I can't properly close out completed cases."
+        },
+        {
+            "id": 12,
+            "title": "Live Chat Not Receiving Messages",
+            "author": "Ana Garcia",
+            "time": "2025-02-06T19:30:00Z",
+            "status": "In Progress",
+            "description": "Customers are reporting that they're sending messages through live chat, but I don't see anything on my end. I've confirmed with multiple users that they are actively sending messages, but my chat window remains blank. Please investigate why chat messages aren't being received."
+        },
+        {
+            "id": 13,
+            "title": "Frequent Logouts from Support Portal",
+            "author": "Tej Kumar",
+            "time": "2025-02-06T20:45:00Z",
+            "status": "Open",
+            "description": "Every 30 minutes, I am logged out of the support portal even though I select 'Keep me signed in'. This started happening after the most recent security update. It’s disruptive as I have to log back in constantly throughout the day."
+        },
+        {
+            "id": 14,
+            "title": "Voice Support Dropping Calls",
+            "author": "Max Mueller",
+            "time": "2025-02-06T21:15:00Z",
+            "status": "Open",
+            "description": "I'm noticing that customer calls randomly drop after a few minutes. My internet connection is stable, and this happens across different customer interactions. It’s impacting my ability to resolve issues efficiently. Could this be a system-side problem?"
+        },
+        {
+            "id": 15,
+            "title": "Performance Metrics Not Updating",
+            "author": "Olivia Brown",
+            "time": "2025-02-06T22:00:00Z",
+            "status": "Open",
+            "description": "The performance dashboard has not updated since yesterday, and it’s not reflecting the cases I’ve closed today. I need accurate metrics to track my resolution rate. Please check if there is a system-wide delay in performance updates."
+        },
+        {
+            "id": 16,
+            "title": "Cannot Attach Files to Cases",
+            "author": "John Smith",
+            "time": "2025-02-07T08:00:00Z",
+            "status": "Open",
+            "description": "I am unable to attach files to support cases. When I try to upload a file, the system either freezes or throws an 'Upload Failed' error. This is making it difficult to share logs and screenshots with customers."
+        },
+        {
+            "id": 17,
+            "title": "Inconsistent Auto-Assignment Behavior",
+            "author": "Ana Garcia",
+            "time": "2025-02-07T09:30:00Z",
+            "status": "In Progress",
+            "description": "Auto-assignment is working inconsistently. Some days, I receive cases back-to-back, and other times I go hours without any assignments despite being available. I need clarity on whether my assignment settings are configured correctly."
+        },
+        {
+            "id": 18,
+            "title": "Email Notifications Not Working",
+            "author": "Tej Kumar",
+            "time": "2025-02-07T10:15:00Z",
+            "status": "Open",
+            "description": "I'm not receiving email notifications when customers update cases or when new cases are assigned to me. This has led to missed follow-ups. Please check if there's an issue with the email alert system."
+        },
+        {
+            "id": 19,
+            "title": "Case Escalation Not Functioning",
+            "author": "Max Mueller",
+            "time": "2025-02-07T11:45:00Z",
+            "status": "Open",
+            "description": "When I try to escalate cases to Tier 2 support, the system does not register the escalation request. The button is unresponsive, and the case remains in my queue. This is preventing customers from getting timely assistance."
+        },
+        {
+            "id": 20,
+            "title": "Two-Factor Authentication Not Prompting",
+            "author": "Olivia Brown",
+            "time": "2025-02-07T12:30:00Z",
+            "status": "Open",
+            "description": "When logging into the support portal, I am no longer prompted for two-factor authentication. I checked my settings, and 2FA is still enabled, but I am able to log in without receiving a verification code. This is a security concern, and I would like to know if this is a known issue."
         }
     ]
 }
