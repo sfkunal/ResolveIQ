@@ -7,6 +7,8 @@ import markdown
 from langchain_community.chat_models import ChatOllama
 from langchain_core.messages import HumanMessage, SystemMessage
 import sqlite3
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+import config
 
 def get_tickets():
     with open('support_tickets.json', 'r') as file:
@@ -48,7 +50,15 @@ def load_knowledge_base():
                         .replace('<li>', '').replace('</li>', '')
         clean_chunks.append(clean_text)
     
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    # Choose embeddings based on configuration
+    if config.USE_OPENAI_EMBEDDINGS:
+        embeddings = OpenAIEmbeddings(
+            model=config.OPENAI_EMBEDDING_MODEL,
+            openai_api_key=config.OPENAI_API_KEY
+        )
+    else:
+        embeddings = HuggingFaceEmbeddings(model_name=config.HUGGINGFACE_EMBEDDING_MODEL)
+    
     vectorstore = FAISS.from_texts(
         clean_chunks,
         embeddings,
@@ -67,7 +77,17 @@ class ChatModel:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(ChatModel, cls).__new__(cls)
-            cls._instance._model = ChatOllama(model="llama3.2:3b")
+            
+            # Initialize the model based on configuration
+            if config.USE_OPENAI:
+                cls._instance._model = ChatOpenAI(
+                    model=config.OPENAI_MODEL,
+                    openai_api_key=config.OPENAI_API_KEY,
+                    temperature=0.7
+                )
+            else:
+                cls._instance._model = ChatOllama(model=config.OLLAMA_MODEL)
+                
         return cls._instance
 
     @property

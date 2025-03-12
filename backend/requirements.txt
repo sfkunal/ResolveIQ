@@ -6,3 +6,6 @@ markdown
 faiss-cpu
 ollama
 sqlite3
+langchain_openai
+openai
+python-dotenv

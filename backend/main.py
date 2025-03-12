@@ -3,6 +3,7 @@ from flask_cors import CORS
 import engine
 from typing import Optional
 import json
+import config
 
 app = Flask(__name__)
 CORS(app)
@@ -61,8 +62,6 @@ def solve_ticket(ticket_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-        return jsonify({"error": str(e)}), 500
-
 @app.route('/api/chat', methods=['POST'])
 def chat():
     try:
@@ -104,6 +103,55 @@ def chat():
         print(f"Error in chat: {str(e)}")  # logging stuff
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/config/llm', methods=['GET'])
+def get_llm_config():
+    """Return the current LLM configuration"""
+    return jsonify({
+        "use_openai": config.USE_OPENAI,
+        "model": config.OPENAI_MODEL if config.USE_OPENAI else config.OLLAMA_MODEL,
+        "use_openai_embeddings": config.USE_OPENAI_EMBEDDINGS,
+        "embedding_model": config.OPENAI_EMBEDDING_MODEL if config.USE_OPENAI_EMBEDDINGS else config.HUGGINGFACE_EMBEDDING_MODEL
+    })
+
+@app.route('/api/config/llm', methods=['POST'])
+def update_llm_config():
+    """Update the LLM configuration (requires server restart to take effect)"""
+    try:
+        data = request.json
+        
+        # Update the environment variables (this won't persist after restart)
+        if 'use_openai' in data:
+            config.USE_OPENAI = data['use_openai']
+        
+        if 'openai_model' in data and config.USE_OPENAI:
+            config.OPENAI_MODEL = data['openai_model']
+            
+        if 'ollama_model' in data and not config.USE_OPENAI:
+            config.OLLAMA_MODEL = data['ollama_model']
+            
+        if 'use_openai_embeddings' in data:
+            config.USE_OPENAI_EMBEDDINGS = data['use_openai_embeddings']
+            
+        if 'openai_embedding_model' in data and config.USE_OPENAI_EMBEDDINGS:
+            config.OPENAI_EMBEDDING_MODEL = data['openai_embedding_model']
+            
+        if 'huggingface_embedding_model' in data and not config.USE_OPENAI_EMBEDDINGS:
+            config.HUGGINGFACE_EMBEDDING_MODEL = data['huggingface_embedding_model']
+        
+        # Reset the ChatModel singleton to use the new configuration
+        engine.ChatModel._instance = None
+        
+        return jsonify({
+            "message": "Configuration updated. Note that some changes may require a server restart to take full effect.",
+            "current_config": {
+                "use_openai": config.USE_OPENAI,
+                "model": config.OPENAI_MODEL if config.USE_OPENAI else config.OLLAMA_MODEL,
+                "use_openai_embeddings": config.USE_OPENAI_EMBEDDINGS,
+                "embedding_model": config.OPENAI_EMBEDDING_MODEL if config.USE_OPENAI_EMBEDDINGS else config.HUGGINGFACE_EMBEDDING_MODEL
+            }
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
