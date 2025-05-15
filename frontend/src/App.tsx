@@ -20,6 +20,7 @@ interface Ticket {
   reference?: string;
   isLoadingCopilot?: boolean;
   chatHistory?: { sender: 'user' | 'ai'; content: string }[];
+  hasKnowledgeGap?: boolean;
 }
 
 function App() {
@@ -27,6 +28,8 @@ function App() {
   const [canvasTickets, setCanvasTickets] = useState<Ticket[]>([]);
   const [activeTab, setActiveTab] = useState<'wiki' | 'databases'>('wiki');
   const [activeReference, setActiveReference] = useState<string | undefined>(undefined);
+  const [wikiRefreshTrigger, setWikiRefreshTrigger] = useState(0);
+  const [hasRelevantInfo, setHasRelevantInfo] = useState(true);
 
   const handleTicketsReorder = (reorderedTickets: Ticket[]) => {
     setTickets(reorderedTickets);
@@ -67,6 +70,7 @@ function App() {
     if (updatedTicket.reference && !updatedTicket.isLoadingCopilot) {
       setActiveReference(updatedTicket.reference);
       setActiveTab('wiki');
+      setHasRelevantInfo(!updatedTicket.hasKnowledgeGap);
     }
   };
 
@@ -82,13 +86,24 @@ function App() {
     console.log('Opening chat for ticket:', ticketId);
   };
 
+  const handleKnowledgeUpdate = (newSectionTitle?: string) => {
+    setWikiRefreshTrigger(prev => prev + 1);
+    if (newSectionTitle) {
+      setTimeout(() => {
+        setActiveReference(newSectionTitle);
+        setActiveTab('wiki');
+        setHasRelevantInfo(true);
+      }, 100);
+    }
+  };
+
   useEffect(() => {
     const updatedTickets = tickets.map(ticket => {
       const canvasTicket = canvasTickets.find(ct => ct.id === ticket.id);
       return canvasTicket ? { ...ticket, status: canvasTicket.status } : ticket;
     });
     setTickets(updatedTickets);
-  }, [canvasTickets]);
+  }, [canvasTickets, tickets]);
 
   return (
     <div className="App">
@@ -116,6 +131,7 @@ function App() {
             onTicketDrop={handleTicketDrop}
             onTicketRemove={handleTicketRemove}
             onChatOpen={handleChatOpen}
+            onKnowledgeUpdate={handleKnowledgeUpdate}
           />
         </div>
 
@@ -135,7 +151,15 @@ function App() {
             </button>
           </div>
           <div className="tab-content">
-            {activeTab === 'wiki' ? <KnowledgeWiki activeReference={activeReference} /> : <Databases />}
+            {activeTab === 'wiki' ? (
+              <KnowledgeWiki 
+                activeReference={activeReference} 
+                refreshTrigger={wikiRefreshTrigger}
+                hasRelevantInfo={hasRelevantInfo}
+              />
+            ) : (
+              <Databases />
+            )}
           </div>
         </div>
       </div>

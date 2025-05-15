@@ -82,11 +82,11 @@
         },
         {
             "id": 11,
-            "title": "Case Resolution Button Missing",
+            "title": "Microwave is Broken",
             "author": "John Smith",
-            "time": "2025-02-06T18:15:00Z",
+            "time": "2025-02-06T09:23:12Z",
             "status": "Open",
-            "description": "I'm unable to mark cases as resolved because the 'Resolve Case' button has disappeared from my interface. This issue started occurring after the latest system update. Without this functionality, I can't properly close out completed cases."
+            "description": "My microwave is model H200 and it is flashing green and not heating up. I need to get this fixed as soon as possible."
         },
         {
             "id": 12,
@@ -154,11 +154,11 @@
         },
         {
             "id": 20,
-            "title": "Two-Factor Authentication Not Prompting",
-            "author": "Olivia Brown",
-            "time": "2025-02-07T12:30:00Z",
+            "title": "Case Resolution Button Missing",
+            "author": "John Smith",
+            "time": "2025-02-06T18:15:00Z",
             "status": "Open",
-            "description": "When logging into the support portal, I am no longer prompted for two-factor authentication. I checked my settings, and 2FA is still enabled, but I am able to log in without receiving a verification code. This is a security concern, and I would like to know if this is a known issue."
-        }
+            "description": "I'm unable to mark cases as resolved because the 'Resolve Case' button has disappeared from my interface. This issue started occurring after the latest system update. Without this functionality, I can't properly close out completed cases."
+        } 
     ]
 }

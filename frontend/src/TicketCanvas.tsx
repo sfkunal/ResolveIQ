@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
 import ChatPanel from './ChatPanel.tsx';
 import ReactMarkdown from 'react-markdown';
+import KnowledgeGapAlert from './KnowledgeGapAlert.tsx';
 
 interface Ticket {
   id: number;
@@ -16,6 +17,7 @@ interface Ticket {
   reference?: string;
   isLoadingCopilot?: boolean;
   chatHistory?: { sender: 'user' | 'ai'; content: string }[];
+  hasKnowledgeGap?: boolean;
 }
 
 interface TicketCanvasProps {
@@ -24,6 +26,7 @@ interface TicketCanvasProps {
   onTicketDrop: (ticket: Ticket, x: number, y: number) => void;
   onTicketRemove: (ticketId: number) => void;
   onChatOpen: (ticketId: number) => void;
+  onKnowledgeUpdate: (newSectionTitle?: string) => void;
 }
 
 const FullscreenTicket: React.FC<{
@@ -33,7 +36,8 @@ const FullscreenTicket: React.FC<{
   onCopilot: (ticketId: number) => void;
   onChatOpen: (ticketId: number) => void;
   onTicketUpdate: (updatedTicket: Ticket) => void;
-}> = ({ ticket, onClose, onRemove, onCopilot, onChatOpen, onTicketUpdate }) => {
+  onAddSolution: (ticketId: number, solution: string) => Promise<any>;
+}> = ({ ticket, onClose, onRemove, onCopilot, onChatOpen, onTicketUpdate, onAddSolution }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedResponse, setEditedResponse] = useState(ticket.copilotResponse || '');
   const [showStatusSelector, setShowStatusSelector] = useState(false);
@@ -172,50 +176,59 @@ const FullscreenTicket: React.FC<{
                 </div>
               ) : (
                 <>
-                  {!isEditing ? (
-                    <div className="response-content">
-                      <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
-                      <button 
-                        className="edit-response-btn"
-                        onClick={() => {
-                          setIsEditing(true);
-                          setEditedResponse(ticket.copilotResponse || '');
-                        }}
-                      >
-                        Edit Response
-                      </button>
-                    </div>
+                  {ticket.hasKnowledgeGap ? (
+                    <KnowledgeGapAlert
+                      ticketTitle={ticket.title}
+                      onAddSolution={(solution) => onAddSolution(ticket.id, solution)}
+                    />
                   ) : (
-                    <div className="response-editor">
-                      <textarea
-                        value={editedResponse}
-                        onChange={(e) => setEditedResponse(e.target.value)}
-                        className="response-textarea"
-                        placeholder="Edit copilot response"
-                        aria-label="Edit copilot response"
-                      />
-                      <div className="editor-buttons">
-                        <button
-                          onClick={() => {
-                            onTicketUpdate({
-                              ...ticket,
-                              copilotResponse: editedResponse
-                            });
-                            setIsEditing(false);
-                          }}
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={() => {
-                            setIsEditing(false);
-                            setEditedResponse(ticket.copilotResponse || '');
-                          }}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
+                    <>
+                      {!isEditing ? (
+                        <div className="response-content">
+                          <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
+                          <button 
+                            className="edit-response-btn"
+                            onClick={() => {
+                              setIsEditing(true);
+                              setEditedResponse(ticket.copilotResponse || '');
+                            }}
+                          >
+                            Edit Response
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="response-editor">
+                          <textarea
+                            value={editedResponse}
+                            onChange={(e) => setEditedResponse(e.target.value)}
+                            className="response-textarea"
+                            placeholder="Edit copilot response"
+                            aria-label="Edit copilot response"
+                          />
+                          <div className="editor-buttons">
+                            <button
+                              onClick={() => {
+                                onTicketUpdate({
+                                  ...ticket,
+                                  copilotResponse: editedResponse
+                                });
+                                setIsEditing(false);
+                              }}
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsEditing(false);
+                                setEditedResponse(ticket.copilotResponse || '');
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </>
               )}
@@ -247,7 +260,8 @@ const TicketCard: React.FC<{
   onCopilot: (ticketId: number) => void;
   onChatOpen: (ticketId: number) => void;
   onTicketUpdate: (updatedTicket: Ticket) => void;
-}> = ({ ticket, onPositionChange, onRemove, onCopilot, onChatOpen, onTicketUpdate }) => {
+  onAddSolution: (ticketId: number, solution: string) => Promise<any>;
+}> = ({ ticket, onPositionChange, onRemove, onCopilot, onChatOpen, onTicketUpdate, onAddSolution }) => {
   const nodeRef = useRef<HTMLDivElement>(null!);
   const ticketRef = useRef<HTMLDivElement>(null!);
   const [isEditing, setIsEditing] = useState(false);
@@ -266,6 +280,7 @@ const TicketCard: React.FC<{
     });
   };
 
+  // eslint-disable-next-line
   const toggleFullscreen = (e: React.MouseEvent) => {
     e.stopPropagation();
     onTicketUpdate({
@@ -403,13 +418,13 @@ const TicketCard: React.FC<{
               </div>
             </div>
             
-            <button 
+            {/* <button 
               className="fullscreen-toggle-btn"
               onClick={toggleFullscreen}
               title="View in fullscreen"
             >
               <span role="img" aria-label="fullscreen">⤢</span>
-            </button>
+            </button> */}
           </div>
           {(ticket.copilotResponse || ticket.isLoadingCopilot) && (
             <div className="copilot-response">
@@ -420,62 +435,71 @@ const TicketCard: React.FC<{
                 </div>
               ) : (
                 <>
-                  {!isEditing ? (
-                    <>
-                      <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
-                      <button 
-                        className="edit-response-btn"
-                        onClick={() => {
-                          setIsEditing(true);
-                          setEditedResponse(ticket.copilotResponse || '');
-                        }}
-                      >
-                        Edit Response
-                      </button>
-                    </>
+                  {ticket.hasKnowledgeGap ? (
+                    <KnowledgeGapAlert
+                      ticketTitle={ticket.title}
+                      onAddSolution={(solution) => onAddSolution(ticket.id, solution)}
+                    />
                   ) : (
-                    <div className="response-editor">
-                      <textarea
-                        value={editedResponse}
-                        onChange={(e) => setEditedResponse(e.target.value)}
-                        className="response-textarea"
-                        placeholder="Edit copilot response"
-                        aria-label="Edit copilot response"
-                      />
-                      <div className="editor-buttons">
-                        <button
-                          onClick={() => {
-                            onTicketUpdate({
-                              ...ticket,
-                              copilotResponse: editedResponse
-                            });
-                            setIsEditing(false);
-                          }}
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={() => {
-                            setIsEditing(false);
-                            setEditedResponse(ticket.copilotResponse || '');
-                          }}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {ticket.reference && (
-                    <div className="copilot-reference">
-                      <h4 className="reference-title">Knowledge Wiki References</h4>
-                      <div className="reference-list">
-                        {ticket.reference.split(',').map((ref, index) => (
-                          <div key={index} className="reference-item">
-                            <span className="reference-bullet">-</span> {cleanReference(ref)}
+                    <>
+                      {!isEditing ? (
+                        <>
+                          <ReactMarkdown>{ticket.copilotResponse || ''}</ReactMarkdown>
+                          <button 
+                            className="edit-response-btn"
+                            onClick={() => {
+                              setIsEditing(true);
+                              setEditedResponse(ticket.copilotResponse || '');
+                            }}
+                          >
+                            Edit Response
+                          </button>
+                        </>
+                      ) : (
+                        <div className="response-editor">
+                          <textarea
+                            value={editedResponse}
+                            onChange={(e) => setEditedResponse(e.target.value)}
+                            className="response-textarea"
+                            placeholder="Edit copilot response"
+                            aria-label="Edit copilot response"
+                          />
+                          <div className="editor-buttons">
+                            <button
+                              onClick={() => {
+                                onTicketUpdate({
+                                  ...ticket,
+                                  copilotResponse: editedResponse
+                                });
+                                setIsEditing(false);
+                              }}
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsEditing(false);
+                                setEditedResponse(ticket.copilotResponse || '');
+                              }}
+                            >
+                              Cancel
+                            </button>
                           </div>
-                        ))}
-                      </div>
-                    </div>
+                        </div>
+                      )}
+                      {ticket.reference && (
+                        <div className="copilot-reference">
+                          <h4 className="reference-title">Knowledge Wiki References</h4>
+                          <div className="reference-list">
+                            {ticket.reference.split(',').map((ref, index) => (
+                              <div key={index} className="reference-item">
+                                <span className="reference-bullet">-</span> {cleanReference(ref)}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </>
               )}
@@ -491,7 +515,8 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
   onTicketUpdate, 
   onTicketDrop,
   onTicketRemove,
-  onChatOpen
+  onChatOpen,
+  onKnowledgeUpdate
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [activeChatTicketId, setActiveChatTicketId] = useState<number | null>(null);
@@ -502,6 +527,44 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
       ...ticket,
       position: { x, y }
     });
+  };
+
+  const handleAddSolution = async (ticketId: number, solution: string) => {
+    const ticket = tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/knowledge/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          solution,
+          ticketTitle: ticket.title
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to add solution');
+      }
+
+      onTicketUpdate({
+        ...ticket,
+        hasKnowledgeGap: false,
+        copilotResponse: solution,
+        reference: ticket.title
+      });
+
+      onKnowledgeUpdate(ticket.title);
+
+      return data;
+    } catch (error) {
+      console.error('Error adding solution:', error);
+      throw error;
+    }
   };
 
   const handleCopilot = async (ticketId: number) => {
@@ -526,7 +589,8 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
         ...ticket,
         isLoadingCopilot: false,
         copilotResponse: data.response,
-        reference: data.reference
+        reference: data.reference,
+        hasKnowledgeGap: data.hasKnowledgeGap
       });
     } catch (error) {
       console.error('Error calling Copilot:', error);
@@ -600,6 +664,7 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
     });
   };
 
+  // eslint-disable-next-line
   const fullscreenTicket = tickets.find(ticket => ticket.isFullscreen);
 
   return (
@@ -637,28 +702,31 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
         }}
       >
         {tickets.map((ticket) => (
-          <TicketCard
-            key={ticket.id}
-            ticket={ticket}
-            onPositionChange={(x, y) => handlePositionChange(ticket, x, y)}
-            onRemove={onTicketRemove}
-            onCopilot={handleCopilot}
-            onChatOpen={handleChatOpen}
-            onTicketUpdate={onTicketUpdate}
-          />
+          ticket.isFullscreen ? (
+            <FullscreenTicket
+              key={ticket.id}
+              ticket={ticket}
+              onClose={() => handleFullscreenClose(ticket.id)}
+              onRemove={onTicketRemove}
+              onCopilot={handleCopilot}
+              onChatOpen={handleChatOpen}
+              onTicketUpdate={onTicketUpdate}
+              onAddSolution={handleAddSolution}
+            />
+          ) : (
+            <TicketCard
+              key={ticket.id}
+              ticket={ticket}
+              onPositionChange={(x, y) => handlePositionChange(ticket, x, y)}
+              onRemove={onTicketRemove}
+              onCopilot={handleCopilot}
+              onChatOpen={handleChatOpen}
+              onTicketUpdate={onTicketUpdate}
+              onAddSolution={handleAddSolution}
+            />
+          )
         ))}
       </div>
-      
-      {fullscreenTicket && (
-        <FullscreenTicket
-          ticket={fullscreenTicket}
-          onClose={() => handleFullscreenClose(fullscreenTicket.id)}
-          onRemove={onTicketRemove}
-          onCopilot={handleCopilot}
-          onChatOpen={handleChatOpen}
-          onTicketUpdate={onTicketUpdate}
-        />
-      )}
       
       {activeChatTicketId && (
         <ChatPanel

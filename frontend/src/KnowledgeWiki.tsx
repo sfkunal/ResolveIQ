@@ -1,24 +1,48 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import knowledgeWiki from './knowledge_wiki.md';
 
 interface KnowledgeWikiProps {
   activeReference?: string;
+  refreshTrigger?: number;
+  hasRelevantInfo?: boolean;
 }
 
-const KnowledgeWiki: React.FC<KnowledgeWikiProps> = ({ activeReference }) => {
+const KnowledgeWiki: React.FC<KnowledgeWikiProps> = ({ 
+  activeReference, 
+  refreshTrigger = 0,
+  hasRelevantInfo = true 
+}) => {
   const [wikiContent, setWikiContent] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const wikiContentRef = useRef<HTMLDivElement>(null);
   const highlightedSectionRef = useRef<HTMLElement | null>(null);
   const highlightedElementsRef = useRef<HTMLElement[]>([]);
   const highlightTimeoutRef = useRef<number | null>(null);
 
+  const loadWikiContent = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/knowledge/wiki');
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to load knowledge wiki');
+      }
+      
+      setWikiContent(data.content);
+    } catch (error) {
+      console.error('Error loading wiki:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load knowledge wiki');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetch(knowledgeWiki)
-      .then(response => response.text())
-      .then(text => setWikiContent(text))
-      .catch(error => console.error('Error loading wiki:', error));
-  }, []);
+    loadWikiContent();
+  }, [refreshTrigger]);
 
   const clearHighlights = () => {
     if (highlightedElementsRef.current.length > 0) {
@@ -31,7 +55,10 @@ const KnowledgeWiki: React.FC<KnowledgeWikiProps> = ({ activeReference }) => {
   };
 
   useEffect(() => {
-    if (!activeReference || !wikiContentRef.current) return;
+    if (!hasRelevantInfo || !activeReference || !wikiContentRef.current) {
+      clearHighlights();
+      return;
+    }
 
     if (highlightTimeoutRef.current) {
       window.clearTimeout(highlightTimeoutRef.current);
@@ -74,13 +101,24 @@ const KnowledgeWiki: React.FC<KnowledgeWikiProps> = ({ activeReference }) => {
       }
       clearHighlights();
     };
-  }, [activeReference, wikiContent]);
+  }, [activeReference, wikiContent, hasRelevantInfo]);
 
   return (
     <div className="knowledge-wiki">
       <h3>Knowledge Base</h3>
       <div className="wiki-content" ref={wikiContentRef}>
-        <ReactMarkdown>{wikiContent}</ReactMarkdown>
+        {isLoading ? (
+          <div className="loading-container">
+            <div className="spinner" />
+            <span>Loading knowledge base...</span>
+          </div>
+        ) : error ? (
+          <div className="error-message">
+            {error}
+          </div>
+        ) : (
+          <ReactMarkdown>{wikiContent}</ReactMarkdown>
+        )}
       </div>
     </div>
   );

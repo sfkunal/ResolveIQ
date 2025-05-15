@@ -38,24 +38,24 @@ def solve_ticket(ticket_id):
         ticket = engine.get_ticket(ticket_id)
         ticket_string = engine.stringify_ticket(ticket)
         ticket_author = ticket['author']
-
-        relevant_knowledge = engine.find_relevant_knowledge(
+        relevant_knowledge, has_knowledge_gap = engine.find_relevant_knowledge(
             ticket_string, 
             kb_manager.vectorstore
         )
         
         response_content, reference = engine.generate_response(
             ticket_string,
-            relevant_knowledge[0],
+            relevant_knowledge[0] if relevant_knowledge else None,
             ticket_author
         )
-        
-        return jsonify({
+        response = jsonify({
             "ticket": ticket,
             "response": response_content,
             "reference": reference,
-            "relevant_knowledge": relevant_knowledge[0][0]
+            "relevant_knowledge": relevant_knowledge[0][0] if relevant_knowledge else None,
+            "hasKnowledgeGap": has_knowledge_gap
         })
+        return response
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -144,6 +144,37 @@ def update_llm_config():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/knowledge/add', methods=['POST'])
+def add_knowledge():
+    try:
+        data = request.json
+        solution = data.get('solution')
+        ticket_title = data.get('ticketTitle')
+        
+        if not solution or not ticket_title:
+            return jsonify({"error": "Missing required fields"}), 400
+            
+        new_section = engine.add_knowledge_to_wiki(ticket_title, solution)
+        
+        kb_manager._vectorstore = engine.load_knowledge_base()
+        
+        return jsonify({
+            "success": True,
+            "message": "Knowledge added successfully",
+            "newSection": new_section
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/knowledge/wiki', methods=['GET'])
+def get_knowledge_wiki():
+    try:
+        with open('knowledge_wiki.md', 'r') as f:
+            content = f.read()
+        return jsonify({'content': content})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

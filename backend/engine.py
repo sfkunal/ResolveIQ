@@ -65,8 +65,23 @@ def load_knowledge_base():
     return vectorstore
 
 def find_relevant_knowledge(ticket_string, vectorstore, top_k=3):
-    relevant_chunks = vectorstore.similarity_search(ticket_string, k=top_k)
-    return [(doc.page_content, doc.metadata) for doc in relevant_chunks]
+    relevant_chunks = vectorstore.similarity_search_with_score(ticket_string, k=top_k)
+    if not relevant_chunks:
+        return [], True 
+    
+    best_score = relevant_chunks[0][1]
+    print("best_score:", best_score)
+    has_knowledge_gap = bool(best_score > 1.0)
+    
+    return [(doc.page_content, doc.metadata) for doc, _ in relevant_chunks], has_knowledge_gap
+
+def add_knowledge_to_wiki(ticket_title, solution):
+    new_section = f"\n### {ticket_title}\n\n{solution}\n\n---\n"
+    
+    with open('knowledge_wiki.md', 'a') as f:
+        f.write(new_section)
+    
+    return new_section
 
 class ChatModel:
     _instance = None
@@ -349,7 +364,12 @@ def solve_ticket(ticket_index):
     
     ticket = get_ticket(ticket_index)
     ticket_string = stringify_ticket(ticket)
-    relevant_knowledge = find_relevant_knowledge(ticket_string, vectorstore)
-    response = generate_response(ticket_string, relevant_knowledge[0])
+    relevant_knowledge, has_knowledge_gap = find_relevant_knowledge(ticket_string, vectorstore)
+    response = generate_response(ticket_string, relevant_knowledge[0], ticket['employee'])
+
+    if has_knowledge_gap:
+        solution = input("Enter the solution to add to the knowledge base: ")
+        new_section = add_knowledge_to_wiki(ticket['title'], solution)
+        print(f"New knowledge added to the knowledge base:\n{new_section}")
 
     return response
