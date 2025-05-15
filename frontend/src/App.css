@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  color: #323130;
 }
 
 .App-logo {
@@ -14,7 +15,7 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #0078d4;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -25,7 +26,7 @@
 }
 
 .App-link {
-  color: #61dafb;
+  color: #00b7c3;
 }
 
 @keyframes App-logo-spin {
@@ -55,7 +56,7 @@
   grid-template-columns: 300px 1fr 400px;
   height: 100vh;
   gap: 1px;
-  background-color: #f0f0f0;
+  background-color: #f3f2f1;
   overflow: hidden;
   padding-top: 0;
   margin-top: 0;
@@ -87,7 +88,7 @@
   flex-grow: 1;
   overflow-y: auto;
   margin-bottom: 20px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #edebe9;
   border-radius: 4px;
   padding: 10px;
 }
@@ -100,13 +101,13 @@
 .chat-input input {
   flex-grow: 1;
   padding: 10px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #edebe9;
   border-radius: 4px;
 }
 
 .chat-input button {
   padding: 10px 20px;
-  background-color: #0066cc;
+  background-color: #0078d4;
   color: white;
   border: none;
   border-radius: 4px;
@@ -114,24 +115,29 @@
 }
 
 .chat-input button:hover {
-  background-color: #0052a3;
+  background-color: #106ebe;
+}
+
+.chat-input button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .ticket-list {
-  border: 1px solid #e0e0e0;
+  border: 1px solid #edebe9;
   border-radius: 4px;
   min-height: 200px;
 }
 
 .ticket-item {
   padding: 15px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #edebe9;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .ticket-item:hover {
-  background-color: #f5f5f5;
+  background-color: #f3f2f1;
 }
 
 .ticket-item:last-child {
@@ -161,26 +167,27 @@
 }
 
 .status-badge.open {
-  background-color: #e3f2fd;
-  color: #1976d2;
+  background-color: #e6f3ff;
+  color: #0078d4;
 }
 
 .status-badge.in.progress {
-  background-color: #fff3e0;
-  color: #f57c00;
+  background-color: #fff4ce;
+  color: #d83b01;
 }
 
 .status-badge.resolved {
-  background-color: #e8f5e9;
-  color: #388e3c;
+  background-color: #dff6dd;
+  color: #107c10;
 }
 
 .ticket-author {
   font-weight: 500;
+  color: #323130;
 }
 
 .ticket-time {
-  color: #999;
+  color: #605e5c;
 }
 
 .ticket-details {
@@ -207,7 +214,7 @@
 }
 
 .ticket-details-meta {
-  background-color: #f8f9fa;
+  background-color: #f3f2f1;
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 24px;
@@ -224,12 +231,12 @@
 
 .meta-label {
   width: 120px;
-  color: #666;
+  color: #605e5c;
   font-weight: 500;
 }
 
 .meta-value {
-  color: #333;
+  color: #323130;
 }
 
 .ticket-details-description {
@@ -256,14 +263,14 @@
 }
 
 .user-message {
-  background-color: #007bff;
+  background-color: #0078d4;
   color: white;
   margin-left: auto;
 }
 
 .ai-message {
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: #f3f2f1;
+  color: #323130;
   margin-right: auto;
 }
 
@@ -271,12 +278,6 @@
   font-size: 0.8em;
   margin-top: 4px;
   opacity: 0.7;
-}
-
-.chat-input input:disabled,
-.chat-input button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .message-content {
@@ -476,7 +477,7 @@
   left: -10px;
   padding: 6px 12px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
   color: white;
   border: 2px solid white;
   cursor: pointer;
@@ -497,7 +498,7 @@
 }
 
 .ticket-copilot-btn:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #106ebe 0%, #005a9e 100%);
   box-shadow: 0 4px 6px rgba(0,0,0,0.25);
 }
 
@@ -592,7 +593,7 @@
   left: 120px;
   padding: 6px 12px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, #107c10 0%, #0b5a0b 100%);
   color: white;
   border: 2px solid white;
   cursor: pointer;
@@ -613,7 +614,7 @@
 }
 
 .ticket-chat-btn:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, #0b5a0b 0%, #094509 100%);
   box-shadow: 0 4px 6px rgba(0,0,0,0.25);
 }
 
@@ -705,7 +706,7 @@
 .chat-input input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #edebe9;
   border-radius: 4px;
   font-size: 14px;
 }
@@ -886,23 +887,23 @@
 }
 
 .status-badge.open {
-  background-color: #e3f2fd;
-  color: #1976d2;
+  background-color: #e6f3ff;
+  color: #0078d4;
 }
 
 .status-badge.in-progress {
-  background-color: #fff3e0;
-  color: #f57c00;
+  background-color: #fff4ce;
+  color: #d83b01;
 }
 
 .status-badge.resolved {
-  background-color: #e8f5e9;
-  color: #388e3c;
+  background-color: #dff6dd;
+  color: #107c10;
 }
 
 .ticket-item {
   padding: 15px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #edebe9;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.15s, box-shadow 0.15s;
   display: flex;
@@ -945,7 +946,7 @@
 }
 
 .ticket-item:hover {
-  background-color: #f5f5f5;
+  background-color: #f3f2f1;
 }
 
 .ticket-item:active {
@@ -1096,7 +1097,7 @@
   left: 187px;
   padding: 6px 12px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
   color: white;
   border: 2px solid white;
   cursor: pointer;
@@ -1118,7 +1119,7 @@
 }
 
 .ticket-status-btn:hover {
-  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  background: linear-gradient(135deg, #106ebe 0%, #005a9e 100%);
   box-shadow: 0 4px 6px rgba(0,0,0,0.25);
 }
 
@@ -1154,12 +1155,12 @@
 }
 
 .status-option:hover {
-  background: #f5f5f5;
+  background: #f3f2f1;
 }
 
 .status-option.active {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: #e6f3ff;
+  color: #0078d4;
 }
 
 .status-option:not(:last-child) {
@@ -1167,8 +1168,8 @@
 }
 
 .highlighted-section {
-  background-color: rgba(255, 236, 179, 0.5);
-  border-left: 4px solid #ffc107;
+  background-color: rgba(255, 244, 206, 0.5);
+  border-left: 4px solid #d83b01;
   padding-left: 12px !important;
   margin-left: -16px !important;
   transition: background-color 0.3s ease;
@@ -1176,9 +1177,9 @@
 }
 
 @keyframes highlight-pulse {
-  0% { background-color: rgba(255, 236, 179, 0.2); }
-  50% { background-color: rgba(255, 236, 179, 0.8); }
-  100% { background-color: rgba(255, 236, 179, 0.5); }
+  0% { background-color: rgba(255, 244, 206, 0.2); }
+  50% { background-color: rgba(255, 244, 206, 0.8); }
+  100% { background-color: rgba(255, 244, 206, 0.5); }
 }
 
 .fullscreen-toggle-btn {
@@ -1274,7 +1275,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #f8f9fa;
+  background-color: #f3f2f1;
   position: relative;
 }
 
@@ -1318,7 +1319,7 @@
 .fullscreen-controls button {
   padding: 8px 16px;
   border-radius: 6px;
-  border: 1px solid #ddd;
+  border: 1px solid #edebe9;
   background-color: white;
   display: flex;
   align-items: center;
@@ -1330,7 +1331,7 @@
 }
 
 .fullscreen-controls button:hover {
-  background-color: #f5f5f5;
+  background-color: #f3f2f1;
   transform: translateY(-1px);
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
@@ -1358,7 +1359,7 @@
 }
 
 .ticket-info-section, .copilot-section, .references-section {
-  background-color: #f9f9f9;
+  background-color: #f3f2f1;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -1369,7 +1370,7 @@
   margin-bottom: 15px;
   font-size: 18px;
   color: #333;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #edebe9;
   padding-bottom: 10px;
 }
 
@@ -1385,18 +1386,18 @@
 .loading-container .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #3498db;
+  border: 3px solid #f3f2f1;
+  border-top: 3px solid #0078d4;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 .error-message {
-  color: #dc3545;
+  color: #d13438;
   padding: 20px;
   text-align: center;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
+  background-color: #fde7e9;
+  border: 1px solid #f1707b;
   border-radius: 4px;
   margin: 20px;
 }
@@ -1434,9 +1435,9 @@
   flex-wrap: wrap;
   width: 100%;
   position: relative;
-  background-color: #f0f0f0;
-  border-bottom: 1px solid #eee;
-  border-top: 1px solid #eee;
+  background-color: #f3f2f1;
+  border-bottom: 1px solid #edebe9;
+  border-top: 1px solid #edebe9;
   z-index: 10;
 }
 
@@ -1469,53 +1470,53 @@
 }
 
 .fullscreen-action-bar .ticket-copilot-btn {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
   position: static;
   opacity: 1;
   transform: none;
 }
 
 .fullscreen-action-bar .ticket-copilot-btn:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #106ebe 0%, #005a9e 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .fullscreen-action-bar .ticket-chat-btn {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  background: linear-gradient(135deg, #107c10 0%, #0b5a0b 100%);
   position: static;
   opacity: 1;
   transform: none;
 }
 
 .fullscreen-action-bar .ticket-chat-btn:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, #0b5a0b 0%, #094509 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .fullscreen-action-bar .ticket-status-btn {
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
   position: static;
   opacity: 1;
   transform: none;
 }
 
 .fullscreen-action-bar .ticket-status-btn:hover {
-  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  background: linear-gradient(135deg, #106ebe 0%, #005a9e 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .fullscreen-action-bar .ticket-remove-btn {
-  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  background: linear-gradient(135deg, #d13438 0%, #a4262c 100%);
   position: static;
   opacity: 1;
   transform: none;
 }
 
 .fullscreen-action-bar .ticket-remove-btn:hover {
-  background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+  background: linear-gradient(135deg, #a4262c 0%, #7b1e23 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
@@ -1564,17 +1565,17 @@
 }
 
 .fullscreen-action-bar .status-option:hover {
-  background: #f5f5f5;
+  background: #f3f2f1;
 }
 
 .fullscreen-action-bar .status-option.active {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: #e6f3ff;
+  color: #0078d4;
   font-weight: 500;
 }
 
 .fullscreen-action-bar .status-option:not(:last-child) {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #edebe9;
 }
 
 .fullscreen-action-bar .status-control {
