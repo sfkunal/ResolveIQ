@@ -22,7 +22,6 @@ class KnowledgeBaseManager:
     def vectorstore(self):
         return self._vectorstore
 
-# Initialize the knowledge base when the server starts
 kb_manager = KnowledgeBaseManager()
 
 @app.route('/api/tickets', methods=['GET'])
@@ -36,17 +35,15 @@ def get_tickets():
 @app.route('/api/tickets/<int:ticket_id>/solve', methods=['POST'])
 def solve_ticket(ticket_id):
     try:
-        # Get the ticket
         ticket = engine.get_ticket(ticket_id)
         ticket_string = engine.stringify_ticket(ticket)
         ticket_author = ticket['author']
-        # Use the singleton vectorstore
+
         relevant_knowledge = engine.find_relevant_knowledge(
             ticket_string, 
             kb_manager.vectorstore
         )
         
-        # Generate response
         response_content, reference = engine.generate_response(
             ticket_string,
             relevant_knowledge[0],
@@ -56,7 +53,7 @@ def solve_ticket(ticket_id):
         return jsonify({
             "ticket": ticket,
             "response": response_content,
-            "reference": reference,  # Include the reference in the response
+            "reference": reference,
             "relevant_knowledge": relevant_knowledge[0][0]
         })
     except Exception as e:
@@ -73,24 +70,21 @@ def chat():
         if not ticket_id or not message:
             return jsonify({"error": "Missing ticketId or message"}), 400
 
-        # get ticket by id
         ticket = engine.get_ticket(ticket_id)
         if not ticket:
             return jsonify({"error": f"Ticket {ticket_id} not found"}), 404
             
         ticket_string = engine.stringify_ticket(ticket)
         
-        # Find relevant knowledge
         relevant_knowledge = engine.find_relevant_knowledge(
             ticket_string + "\n" + message, 
             kb_manager.vectorstore
         )
         
-        # Generate response with chat history and author
         response_content, reference = engine.generate_response(
             ticket_string + "\nUser message: " + message,
             relevant_knowledge[0],
-            ticket['author'],  # Pass the author
+            ticket['author'], 
             chat_history
         )
         
@@ -100,7 +94,7 @@ def chat():
             "relevant_knowledge": relevant_knowledge[0][0]
         })
     except Exception as e:
-        print(f"Error in chat: {str(e)}")  # logging stuff
+        print(f"Error in chat: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/config/llm', methods=['GET'])
@@ -119,7 +113,6 @@ def update_llm_config():
     try:
         data = request.json
         
-        # Update the environment variables (this won't persist after restart)
         if 'use_openai' in data:
             config.USE_OPENAI = data['use_openai']
         
@@ -138,7 +131,6 @@ def update_llm_config():
         if 'huggingface_embedding_model' in data and not config.USE_OPENAI_EMBEDDINGS:
             config.HUGGINGFACE_EMBEDDING_MODEL = data['huggingface_embedding_model']
         
-        # Reset the ChatModel singleton to use the new configuration
         engine.ChatModel._instance = None
         
         return jsonify({

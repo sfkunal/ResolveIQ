@@ -13,13 +13,12 @@ import config
 def get_tickets():
     with open('support_tickets.json', 'r') as file:
         data = json.load(file)
-        return data['tickets']  # only return tickets array bruh
+        return data['tickets']
 
 
 def get_ticket(ticket_id):
     with open('support_tickets.json', 'r') as file:
         data = json.load(file)
-        # find ticket by id instead of array index
         for ticket in data['tickets']:
             if ticket['id'] == ticket_id:
                 return ticket
@@ -35,7 +34,7 @@ def load_knowledge_base():
     chunks = [chunk.strip() for chunk in kb_content.split('###') if chunk.strip()]
     
     clean_chunks = []
-    titles = []  # stores the sectoin titles for references
+    titles = []
     
     for chunk in chunks:
         sections = chunk.split('\n', 1)
@@ -50,7 +49,6 @@ def load_knowledge_base():
                         .replace('<li>', '').replace('</li>', '')
         clean_chunks.append(clean_text)
     
-    # Choose embeddings based on configuration
     if config.USE_OPENAI_EMBEDDINGS:
         embeddings = OpenAIEmbeddings(
             model=config.OPENAI_EMBEDDING_MODEL,
@@ -78,7 +76,6 @@ class ChatModel:
         if cls._instance is None:
             cls._instance = super(ChatModel, cls).__new__(cls)
             
-            # Initialize the model based on configuration
             if config.USE_OPENAI:
                 cls._instance._model = ChatOpenAI(
                     model=config.OPENAI_MODEL,
@@ -280,7 +277,7 @@ def generate_response(ticket_string, relevant_knowledge, employee_name, chat_his
         cursor.execute(sql_query, (employee_name,))
         employee_data = cursor.fetchone()
     
-    employee_info = {"No employee information found"}  # Default in case of no data
+    employee_info = {"No employee information found"}
     
     if employee_data:
         employee_info = {
@@ -297,9 +294,8 @@ def generate_response(ticket_string, relevant_knowledge, employee_name, chat_his
             "name": employee_data[10]
         }
     
-    content, metadata = relevant_knowledge  # Unpack content and metadata from relevant_knowledge
+    content, metadata = relevant_knowledge
 
-    # Build conversation history
     messages = [
         SystemMessage(content=f"""You are a support assistant crafting personalized solutions by weaving knowledge base guidance with specific employee details.
 
@@ -337,7 +333,6 @@ Employee Details:
 Provide a concise step by step solution to the support ticket.""")
     ]
 
-    # Add chat history if it exists
     if chat_history:
         for msg in chat_history:
             if msg['sender'] == 'user':
@@ -346,11 +341,9 @@ Provide a concise step by step solution to the support ticket.""")
                 messages.append(HumanMessage(content=msg['content'], role="assistant"))
     
     response = chat_model.invoke(messages)
-    # returns content and title of relevant section as well
     return response.content, metadata['title']
 
 
-# is this being used for anything? can we delete? - nathan
 def solve_ticket(ticket_index):
     vectorstore = load_knowledge_base()
     
