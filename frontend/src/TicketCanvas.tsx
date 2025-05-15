@@ -26,7 +26,6 @@ interface TicketCanvasProps {
   onChatOpen: (ticketId: number) => void;
 }
 
-// Fullscreen Ticket Modal Component
 const FullscreenTicket: React.FC<{
   ticket: Ticket;
   onClose: () => void;
@@ -50,7 +49,6 @@ const FullscreenTicket: React.FC<{
     return ref.replace(/\*\*/g, '').trim();
   };
   
-  // Prevent clicks inside the modal from propagating to the overlay
   const handleModalClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
@@ -78,7 +76,6 @@ const FullscreenTicket: React.FC<{
           </div>
         </div>
         
-        {/* Action Bar with Conditional Buttons - Moved outside header for better visibility */}
         <div className="fullscreen-action-bar">
           <div className="status-control">
             <button 
@@ -116,7 +113,6 @@ const FullscreenTicket: React.FC<{
             )}
           </div>
           
-          {/* Conditionally show Copilot button if no response exists */}
           {!ticket.copilotResponse && (
             <button 
               className="ticket-copilot-btn"
@@ -141,7 +137,6 @@ const FullscreenTicket: React.FC<{
             </button>
           )}
           
-          {/* Conditionally show Chat button if response exists */}
           {ticket.copilotResponse && (
             <button 
               className="ticket-chat-btn"
@@ -605,7 +600,6 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
     });
   };
 
-  // Find any ticket that's in fullscreen mode
   const fullscreenTicket = tickets.find(ticket => ticket.isFullscreen);
 
   return (
@@ -655,7 +649,6 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
         ))}
       </div>
       
-      {/* Fullscreen Ticket Modal */}
       {fullscreenTicket && (
         <FullscreenTicket
           ticket={fullscreenTicket}
@@ -667,7 +660,6 @@ const TicketCanvas: React.FC<TicketCanvasProps> = ({
         />
       )}
       
-      {/* Chat Panel */}
       {activeChatTicketId && (
         <ChatPanel
           ticketId={activeChatTicketId}

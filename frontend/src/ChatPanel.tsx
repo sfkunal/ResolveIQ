@@ -50,13 +50,11 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
     setIsLoading(true);
 
     try {
-      // Format the chat history for the API
       const formattedHistory = updatedHistory.map(msg => ({
         role: msg.sender === 'user' ? 'user' : 'assistant',
         content: msg.content
       }));
 
-      // Prepare the request payload
       const payload = {
         ticketId: ticketId,
         message: message,
@@ -64,7 +62,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
         context: initialContext
       };
 
-      console.log('Sending payload:', payload); // Debug log
+      console.log('Sending payload:', payload);
 
       const response = await fetch(`http://127.0.0.1:5000/api/chat`, {
         method: 'POST',

@@ -23,13 +23,11 @@ interface Ticket {
 }
 
 function App() {
-  // Initialize tickets from JSON data
   const [tickets, setTickets] = useState<Ticket[]>(ticketData.tickets);
   const [canvasTickets, setCanvasTickets] = useState<Ticket[]>([]);
   const [activeTab, setActiveTab] = useState<'wiki' | 'databases'>('wiki');
   const [activeReference, setActiveReference] = useState<string | undefined>(undefined);
 
-  // Handle reordering of tickets in the list
   const handleTicketsReorder = (reorderedTickets: Ticket[]) => {
     setTickets(reorderedTickets);
   };
@@ -51,24 +49,21 @@ function App() {
   };
 
   const handleTicketUpdate = (updatedTicket: Ticket) => {
-    // Update canvas tickets
     setCanvasTickets(prev =>
       prev.map(ticket =>
         ticket.id === updatedTicket.id ? updatedTicket : ticket
       )
     );
 
-    // Also update the main tickets list
     setTickets(prev =>
       prev.map(ticket =>
         ticket.id === updatedTicket.id ? {
           ...ticket,
-          status: updatedTicket.status // Ensure status is updated in main list
+          status: updatedTicket.status
         } : ticket
       )
     );
 
-    // If the ticket has a reference, set it as active and switch to wiki tab
     if (updatedTicket.reference && !updatedTicket.isLoadingCopilot) {
       setActiveReference(updatedTicket.reference);
       setActiveTab('wiki');
@@ -87,7 +82,6 @@ function App() {
     console.log('Opening chat for ticket:', ticketId);
   };
 
-  // Effect to sync status changes between canvas and list
   useEffect(() => {
     const updatedTickets = tickets.map(ticket => {
       const canvasTicket = canvasTickets.find(ct => ct.id === ticket.id);

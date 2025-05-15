@@ -22,7 +22,6 @@ const TicketList: React.FC<TicketListProps> = ({ tickets, onTicketsReorder, onSe
   const [draggedTicket, setDraggedTicket] = useState<Ticket | null>(null);
   const [draggedOverIndex, setDraggedOverIndex] = useState<number | null>(null);
 
-  // Filter tickets based on active tab
   const filteredTickets = tickets.filter(ticket => {
     if (activeTab === 'All') return true;
     return ticket.status === activeTab;
@@ -32,41 +31,33 @@ const TicketList: React.FC<TicketListProps> = ({ tickets, onTicketsReorder, onSe
     return new Date(dateString).toLocaleString();
   };
 
-  // Handle starting the drag of a ticket within the list
   const handleReorderDragStart = (ticket: Ticket, index: number, e: React.DragEvent) => {
     setDraggedTicket(ticket);
     
-    // Set custom drag image (optional)
     if (e.dataTransfer.setDragImage) {
       const element = e.currentTarget;
       e.dataTransfer.setDragImage(element, 20, 20);
     }
     
-    // For canvas drag
     e.dataTransfer.setData('ticket', JSON.stringify(ticket));
   };
 
-  // Handle dragging over another ticket
   const handleReorderDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     if (draggedTicket === null) return;
     setDraggedOverIndex(index);
   };
 
-  // Handle dropping a ticket to reorder
   const handleReorderDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
     if (draggedTicket === null) return;
     
-    // Find the index of the dragged ticket in the original tickets array
     const draggedIndex = tickets.findIndex(t => t.id === draggedTicket.id);
     if (draggedIndex === -1) return;
     
-    // Get the filtered index of the drop target
     const filteredDropTicket = filteredTickets[dropIndex];
     const targetIndex = tickets.findIndex(t => t.id === filteredDropTicket.id);
     
-    // Create a new array with the reordered tickets
     const newTickets = [...tickets];
     const [removed] = newTickets.splice(draggedIndex, 1);
     newTickets.splice(targetIndex, 0, removed);
@@ -76,7 +67,6 @@ const TicketList: React.FC<TicketListProps> = ({ tickets, onTicketsReorder, onSe
     setDraggedOverIndex(null);
   };
 
-  // Reset drag state when drag ends
   const handleDragEnd = () => {
     setDraggedTicket(null);
     setDraggedOverIndex(null);

@@ -3,21 +3,15 @@ import React from 'react';
 const Databases: React.FC = () => {
   const mockDatabases = [
     {
-      name: 'Customer Records',
+      name: 'Employee Records',
       status: 'Online',
-      size: '1.2 TB',
+      size: '3 TB',
       lastBackup: '2024-03-20 04:00 AM'
     },
     {
-      name: 'Transaction History',
+      name: 'Employee Settings',
       status: 'Online',
-      size: '856 GB',
-      lastBackup: '2024-03-20 04:00 AM'
-    },
-    {
-      name: 'User Analytics',
-      status: 'Online',
-      size: '445 GB',
+      size: '2 GB',
       lastBackup: '2024-03-20 04:00 AM'
     }
   ];
